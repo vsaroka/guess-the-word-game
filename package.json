@@ -1,0 +1,11 @@
+{
+  "name": "guess-the-word-game",
+  "version": "0.1.0",
+  "description": "Browser prototype: match words in your language with translations in the language you learn. 100 timed levels.",
+  "private": true,
+  "scripts": {
+    "start": "npx http-server src -p 8080 -c-1",
+    "test": "node --test test/"
+  },
+  "license": "UNLICENSED"
+}
