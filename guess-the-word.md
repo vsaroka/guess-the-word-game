@@ -34,7 +34,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 
 ## Practice mode (retry failed words)
 
-- A word is added to the failed list when the player picks a wrong translation for it, or when it is still unmatched at timeout.
+- A word is added to the failed list when the player picks a wrong translation for it. Words still open at timeout are not counted as mistakes.
 - "Practice failed words (N)" on the start screen starts a round with up to 8 of the failed words, 8 seconds per word. If fewer than 4 words failed, random filler words pad the round to 4 so both panels stay equal. Fillers are not counted in statistics or the failed list.
 - A word leaves the list when it is matched without a mistake in practice mode.
 - Practice rounds do not change level progress or score. Retry and "Practice again" are offered until the list is empty.

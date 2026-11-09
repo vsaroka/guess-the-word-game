@@ -32,7 +32,7 @@ The timer pauses while the app is in the background.
 
 ## Practice and statistics
 
-- Words you miss or run out of time on go to a failed list. "Practice failed words" replays them (up to 8 words, padded to at least 4 with filler words) until you get them right.
+- Words you match wrongly go to a failed list. "Practice failed words" replays them (up to 8 words, padded to at least 4 with filler words) until you get them right.
 - "Statistics" shows level progress, win rate, match accuracy and your hardest words per language pair.
 
 ## Difficulty curve (`src/js/levels.js`)
