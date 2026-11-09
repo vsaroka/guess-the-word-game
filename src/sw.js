@@ -1,5 +1,5 @@
 /* Offline cache. Bump CACHE when any cached file changes. */
-var CACHE = 'guess-the-word-v3';
+var CACHE = 'guess-the-word-v5';
 var FILES = [
   './', './index.html', './manifest.webmanifest',
   './css/style.css',
@@ -19,5 +19,12 @@ self.addEventListener('activate', function (e) {
 
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
-  e.respondWith(caches.match(e.request).then(function (hit) { return hit || fetch(e.request); }));
+  // network first so updates show up right away when online; fall back to the cache when offline
+  e.respondWith(
+    fetch(e.request).then(function (res) {
+      var copy = res.clone();
+      caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+      return res;
+    }).catch(function () { return caches.match(e.request); })
+  );
 });

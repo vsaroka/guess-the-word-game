@@ -24,8 +24,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 
 | Parameter | Level 1 | Level 100 |
 |---|---|---|
-| Pairs to match | 4 (grows by 1 every 9 levels) | 12 (capped) |
-| Distractors (extra wrong translations on the right) | 2 (two more every level) | 30 (capped from level 15) |
+| Words in each panel (same count on both sides, every word has a match) | 4 (two more every level) | 30 (capped from level 14) |
 | Time per pair | about 8.9 s | 3.2 s (floor) |
 | Vocabulary pool | 20 easiest words | all words |
 
@@ -36,7 +35,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 ## Practice mode (retry failed words)
 
 - A word is added to the failed list when the player picks a wrong translation for it, or when it is still unmatched at timeout.
-- "Practice failed words (N)" on the start screen starts a round with up to 8 of the failed words plus 2 random distractors, 8 seconds per word.
+- "Practice failed words (N)" on the start screen starts a round with up to 8 of the failed words, 8 seconds per word. If fewer than 4 words failed, random filler words pad the round to 4 so both panels stay equal. Fillers are not counted in statistics or the failed list.
 - A word leaves the list when it is matched without a mistake in practice mode.
 - Practice rounds do not change level progress or score. Retry and "Practice again" are offered until the list is empty.
 - The failed list is kept per language pair.

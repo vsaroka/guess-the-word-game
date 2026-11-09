@@ -14,24 +14,30 @@ test('difficulty never decreases across 100 levels', () => {
   }
 });
 
-test('options grow by two per level up to the cap', () => {
+test('both panels hold the same words and grow by two per level up to the cap', () => {
+  const n = Vocab.ENTRIES.length;
   for (let l = 1; l <= 100; l++) {
-    assert.strictEqual(Levels.params(l).distractors, Math.min(Levels.MAX_DISTRACTORS, 2 * l));
+    const p = Levels.params(l);
+    assert.strictEqual(p.pairs, Math.min(Levels.MAX_PAIRS, 2 + 2 * l));
+    assert.strictEqual(p.distractors, 0);
+    assert.strictEqual(Levels.pickWords(n, l).pairs.length, p.pairs);
   }
-  assert.strictEqual(Levels.params(1).distractors, 2);
-  assert.strictEqual(Levels.params(2).distractors, 4);
-  assert.strictEqual(Levels.params(100).distractors, 30);
+  assert.strictEqual(Levels.params(1).pairs, 4);
+  assert.strictEqual(Levels.params(100).pairs, 30);
 });
 
-test('practice round uses only failed words plus distractors', () => {
+test('practice round uses the failed words, padded with fillers to at least 4', () => {
   const n = Vocab.ENTRIES.length;
-  const failed = [3, 7, 9];
+  const failed = [3, 7];
   const r = Levels.practiceRound(failed, n);
-  assert.deepStrictEqual([...r.pairs].sort((a, b) => a - b), failed);
-  assert.strictEqual(r.distractors.length, 2);
-  r.distractors.forEach(d => assert.ok(!failed.includes(d)));
+  assert.strictEqual(r.pairs.length, 4);
+  assert.strictEqual(r.fillers.length, 2);
+  failed.forEach(f => assert.ok(r.pairs.includes(f)));
+  r.fillers.forEach(f => assert.ok(!failed.includes(f) && r.pairs.includes(f)));
+  assert.strictEqual(r.distractors.length, 0);
   const many = Levels.practiceRound(Array.from({ length: 20 }, (_, i) => i), n);
   assert.strictEqual(many.pairs.length, 8);
+  assert.strictEqual(many.fillers.length, 0);
   assert.strictEqual(many.params.time, 8 * 8);
 });
 

@@ -73,7 +73,8 @@
     // the right list holds the translations plus distractors, shuffled
     var right = L.shuffle(pick.pairs.concat(pick.distractors));
     g = { mode: mode, level: level, p: p, left: pick.pairs, right: right, matched: {}, missed: {}, gained: 0,
-          sel: null, timeLeft: p.time, over: false };
+          fillers: {}, sel: null, timeLeft: p.time, over: false };
+    (pick.fillers || []).forEach(function (i) { g.fillers[i] = true; }); // padding words in practice: not tracked
     $('title-native').textContent = V.LANGUAGES[save.native];
     $('title-target').textContent = V.LANGUAGES[save.target];
     render();
@@ -120,7 +121,7 @@
       if (Object.keys(g.matched).length === g.left.length) win();
     } else {
       // wrong translation chosen for the selected word: it counts as a miss for that word
-      s.misses++; wordStat(g.sel).miss++; addFailed(g.sel); g.missed[g.sel] = true;
+      if (!g.fillers[g.sel]) { s.misses++; wordStat(g.sel).miss++; addFailed(g.sel); g.missed[g.sel] = true; }
       g.timeLeft = Math.max(0, g.timeLeft - g.p.penalty);
       el.classList.add('wrong'); setTimeout(function () { el.classList.remove('wrong'); }, 320);
       persist(); hud();
@@ -177,7 +178,7 @@
     g.over = true; stopTimer();
     var s = stats();
     // words that were never matched count as failed, so they show up in practice mode
-    g.left.forEach(function (idx) { if (!g.matched[idx]) { addFailed(idx); if (!g.missed[idx]) { s.misses++; wordStat(idx).miss++; } } });
+    g.left.forEach(function (idx) { if (!g.matched[idx] && !g.fillers[idx]) { addFailed(idx); if (!g.missed[idx]) { s.misses++; wordStat(idx).miss++; } } });
     if (g.mode === 'level') {
       s.attempts++; s.losses++;
       var lv = s.levels[g.level] || (s.levels[g.level] = { wins: 0, losses: 0, best: 0 });

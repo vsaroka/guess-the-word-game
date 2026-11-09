@@ -21,7 +21,7 @@ The game is a PWA (`manifest.webmanifest`, `sw.js`, `icons/`). It needs HTTPS (o
 2. Open the URL in Chrome on Android, then menu → "Install app" / "Add to Home screen".
 3. Optional Play Store listing: wrap the hosted URL with [PWABuilder](https://www.pwabuilder.com) or Bubblewrap (Trusted Web Activity), or use Capacitor for a native shell.
 
-When you change any cached file, bump `CACHE` in `src/sw.js` so installed copies update.
+The service worker is network-first: online it always loads the newest files, offline it falls back to the cache. Bump `CACHE` in `src/sw.js` when you change the file list. An installed copy running an older service worker needs one or two reloads (or closing and reopening the app) to pick up the first network-first version.
 The timer pauses while the app is in the background.
 
 ## Rules
@@ -32,15 +32,14 @@ The timer pauses while the app is in the background.
 
 ## Practice and statistics
 
-- Words you miss or run out of time on go to a failed list. "Practice failed words" replays them (up to 8 plus 2 distractors) until you get them right.
+- Words you miss or run out of time on go to a failed list. "Practice failed words" replays them (up to 8 words, padded to at least 4 with filler words) until you get them right.
 - "Statistics" shows level progress, win rate, match accuracy and your hardest words per language pair.
 
 ## Difficulty curve (`src/js/levels.js`)
 
 | Knob | Level 1 | Level 100 |
 |---|---|---|
-| Pairs to match | 4 | 12 |
-| Distractor translations on the right | 2 (+2 per level) | 30 (capped from level 15) |
+| Words in each panel (same on both sides) | 4 (+2 per level) | 30 (capped from level 14) |
 | Time per pair | ~8.9 s | ~3.2 s |
 | Vocabulary pool (easy → hard) | 20 words | all words, half drawn from the hardest 40% |
 
