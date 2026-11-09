@@ -32,5 +32,15 @@ li button.done { background: var(--ok); color: #fff; border-color: var(--ok); cu
 li button.wrong { animation: shake .3s; border-color: var(--bad); }
 @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 .hint { color: var(--muted); font-size: 13px; text-align: center; margin-top: 16px; }
+button, select { min-height: 48px; touch-action: manipulation; }
+button.small { min-height: 36px; }
+body { -webkit-tap-highlight-color: transparent; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+@media (max-width: 480px) {
+  main { padding: 8px; }
+  .card { margin-top: 4vh; padding: 16px; }
+  .panels { gap: 8px; }
+  li button { font-size: 15px; padding: 10px 8px; overflow-wrap: anywhere; }
+  .hud { font-size: 14px; gap: 8px; }
+}
 .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, .5); display: flex; align-items: flex-start; justify-content: center; padding: 16px; }
 .overlay .card { width: min(420px, 100%); }

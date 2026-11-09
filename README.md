@@ -13,6 +13,17 @@ npm start      # http://localhost:8080
 npm test       # level/vocabulary checks (Node 18+)
 ```
 
+## Android (installable web app)
+
+The game is a PWA (`manifest.webmanifest`, `sw.js`, `icons/`). It needs HTTPS (or localhost) for install and offline support.
+
+1. Host the `src/` folder on any static HTTPS host (GitHub Pages, Netlify, Cloudflare Pages).
+2. Open the URL in Chrome on Android, then menu → "Install app" / "Add to Home screen".
+3. Optional Play Store listing: wrap the hosted URL with [PWABuilder](https://www.pwabuilder.com) or Bubblewrap (Trusted Web Activity), or use Capacitor for a native shell.
+
+When you change any cached file, bump `CACHE` in `src/sw.js` so installed copies update.
+The timer pauses while the app is in the background.
+
 ## Rules
 
 - 100 levels per language pair; progress and score are stored in `localStorage`.
