@@ -96,6 +96,13 @@
   }
   function stopTimer() { if (g && g.timer) { clearInterval(g.timer); g.timer = null; } }
 
+  // pause while the app/tab is in the background (e.g. phone call, app switch)
+  document.addEventListener('visibilitychange', function () {
+    if (!g || g.over) return;
+    if (document.hidden) { stopTimer(); }
+    else if (!g.timer) { g.last = Date.now(); g.timer = setInterval(tick, 250); }
+  });
+
   function hud() {
     $('hud-level').textContent = g.level;
     $('hud-score').textContent = save.score + (g.p.score || 0);

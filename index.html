@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4a63e7">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
   <title>Guess the Word</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -52,5 +55,10 @@
   <script src="js/vocab.js"></script>
   <script src="js/levels.js"></script>
   <script src="js/game.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    }
+  </script>
 </body>
 </html>
