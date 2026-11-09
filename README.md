@@ -40,7 +40,7 @@ The timer pauses while the app is in the background.
 | Knob | Level 1 | Level 100 |
 |---|---|---|
 | Pairs to match | 4 | 12 |
-| Distractor translations on the right | 1 (+1 per level) | 12 (capped) |
+| Distractor translations on the right | 2 (+2 per level) | 30 (capped from level 15) |
 | Time per pair | ~8.9 s | ~3.2 s |
 | Vocabulary pool (easy → hard) | 20 words | all words, half drawn from the hardest 40% |
 

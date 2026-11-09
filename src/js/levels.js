@@ -5,7 +5,8 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   var MAX_LEVEL = 100;
   var MISS_PENALTY = 3; // seconds lost on a wrong match
-  var MAX_DISTRACTORS = 12; // cap so the right-hand list stays playable on a phone
+  var DISTRACTORS_PER_LEVEL = 2;
+  var MAX_DISTRACTORS = 30; // cap so the right-hand list stays playable on a phone
   var PRACTICE_MAX_PAIRS = 8;
   var PRACTICE_DISTRACTORS = 2;
   var PRACTICE_SECONDS_PER_PAIR = 8;
@@ -16,7 +17,7 @@
   function params(level) {
     level = clamp(Math.round(level), 1, MAX_LEVEL);
     var pairs = Math.min(12, 4 + Math.floor((level - 1) / 9));   // words to match
-    var distractors = Math.min(MAX_DISTRACTORS, level);          // +1 extra wrong translation per level, capped
+    var distractors = Math.min(MAX_DISTRACTORS, level * DISTRACTORS_PER_LEVEL); // +2 extra wrong translations per level, capped
     var perPair = Math.max(3.2, 9 - level * 0.058);              // seconds budget per pair
     var time = Math.round(pairs * perPair);
     return { level: level, pairs: pairs, distractors: distractors, time: time, penalty: MISS_PENALTY };

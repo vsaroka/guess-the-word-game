@@ -14,12 +14,13 @@ test('difficulty never decreases across 100 levels', () => {
   }
 });
 
-test('options grow by one per level up to the cap', () => {
+test('options grow by two per level up to the cap', () => {
   for (let l = 1; l <= 100; l++) {
-    assert.strictEqual(Levels.params(l).distractors, Math.min(Levels.MAX_DISTRACTORS, l));
+    assert.strictEqual(Levels.params(l).distractors, Math.min(Levels.MAX_DISTRACTORS, 2 * l));
   }
-  assert.strictEqual(Levels.params(1).distractors, 1);
-  assert.strictEqual(Levels.params(2).distractors, 2);
+  assert.strictEqual(Levels.params(1).distractors, 2);
+  assert.strictEqual(Levels.params(2).distractors, 4);
+  assert.strictEqual(Levels.params(100).distractors, 30);
 });
 
 test('practice round uses only failed words plus distractors', () => {

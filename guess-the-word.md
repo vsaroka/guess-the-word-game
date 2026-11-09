@@ -25,7 +25,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 | Parameter | Level 1 | Level 100 |
 |---|---|---|
 | Pairs to match | 4 (grows by 1 every 9 levels) | 12 (capped) |
-| Distractors (extra wrong translations on the right) | 1 (one more every level) | 12 (capped from level 12) |
+| Distractors (extra wrong translations on the right) | 2 (two more every level) | 30 (capped from level 15) |
 | Time per pair | about 8.9 s | 3.2 s (floor) |
 | Vocabulary pool | 20 easiest words | all words |
 
