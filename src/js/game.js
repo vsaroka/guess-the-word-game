@@ -3,18 +3,39 @@
   var $ = function (id) { return document.getElementById(id); };
   var STORE = 'guess-the-word-v1';
 
-  var save = load();
-  var g = null; // current game state
-
+  function defaults() { return { native: 'de', target: 'fr', best: {}, score: 0, failed: {}, stats: {} }; }
   function load() {
-    try { return Object.assign({ native: 'de', target: 'fr', best: {}, score: 0 }, JSON.parse(localStorage.getItem(STORE))); }
-    catch (e) { return { native: 'de', target: 'fr', best: {}, score: 0 }; }
+    try { return Object.assign(defaults(), JSON.parse(localStorage.getItem(STORE))); }
+    catch (e) { return defaults(); }
   }
   function persist() { try { localStorage.setItem(STORE, JSON.stringify(save)); } catch (e) {} }
 
-  // progress is tracked per language pair: highest unlocked level
+  var save = load();
+  var g = null; // current round state
+
+  // vocabulary entries are identified by their English word, stable across language pairs
+  var byId = {};
+  V.ENTRIES.forEach(function (e, i) { byId[e.en] = i; });
+  function id(idx) { return V.ENTRIES[idx].en; }
+
+  // everything is tracked per language pair
   function key() { return save.native + '>' + save.target; }
   function unlocked() { return save.best[key()] || 1; }
+  function stats() {
+    var s = save.stats[key()];
+    if (!s) s = save.stats[key()] = { attempts: 0, wins: 0, losses: 0, matches: 0, misses: 0, practice: 0, levels: {}, words: {} };
+    return s;
+  }
+  function wordStat(idx) { var w = stats().words; return w[id(idx)] || (w[id(idx)] = { ok: 0, miss: 0 }); }
+  function failedIdx() { return (save.failed[key()] || []).map(function (i) { return byId[i]; }).filter(function (i) { return i != null; }); }
+  function addFailed(idx) {
+    var list = save.failed[key()] || (save.failed[key()] = []);
+    if (list.indexOf(id(idx)) < 0) list.push(id(idx));
+  }
+  function removeFailed(idx) {
+    var list = save.failed[key()] || [];
+    var at = list.indexOf(id(idx)); if (at >= 0) list.splice(at, 1);
+  }
 
   function fillSelect(sel, value) {
     sel.innerHTML = '';
@@ -25,22 +46,34 @@
   }
 
   function refreshStart() {
+    var n = failedIdx().length;
     $('progress-info').textContent = 'Next level: ' + unlocked() + ' (' + key().replace('>', ' → ') + ')';
+    $('btn-practice').textContent = 'Practice failed words (' + n + ')';
+    $('btn-practice').disabled = n === 0 || save.native === save.target;
   }
 
-  function show(id) {
-    ['screen-start', 'screen-game'].forEach(function (s) { $(s).classList.toggle('hidden', s !== id); });
+  function show(screen) {
+    ['screen-start', 'screen-game', 'screen-stats'].forEach(function (s) { $(s).classList.toggle('hidden', s !== screen); });
   }
 
   function word(idx, lang) { return V.ENTRIES[idx][lang]; }
 
-  function startLevel(level) {
+  /* ---------- rounds ---------- */
+
+  function startRound(mode, level) {
     stopTimer();
-    var pick = L.pickWords(V.ENTRIES.length, level);
+    var pick;
+    if (mode === 'practice') {
+      pick = L.practiceRound(failedIdx(), V.ENTRIES.length);
+      if (!pick.pairs.length) { toMenu(); return; }
+    } else {
+      pick = L.pickWords(V.ENTRIES.length, level);
+    }
     var p = pick.params;
     // the right list holds the translations plus distractors, shuffled
     var right = L.shuffle(pick.pairs.concat(pick.distractors));
-    g = { level: level, p: p, left: pick.pairs, right: right, matched: {}, sel: null, timeLeft: p.time, over: false };
+    g = { mode: mode, level: level, p: p, left: pick.pairs, right: right, matched: {}, missed: {}, gained: 0,
+          sel: null, timeLeft: p.time, over: false };
     $('title-native').textContent = V.LANGUAGES[save.native];
     $('title-target').textContent = V.LANGUAGES[save.target];
     render();
@@ -50,6 +83,7 @@
     g.last = Date.now();
     hud();
   }
+  function startLevel(level) { startRound('level', level); }
 
   function render() {
     renderList($('list-native'), g.left, save.native, 'L');
@@ -74,17 +108,22 @@
       g.sel = idx; el.classList.add('sel'); return;
     }
     if (g.sel == null) return; // choose a left word first
-    var leftBtn = btn('L', g.sel);
+    var leftBtn = btn('L', g.sel), s = stats();
     if (g.sel === idx) {
       g.matched[idx] = true;
       [leftBtn, el].forEach(function (b) { b.classList.remove('sel'); b.classList.add('done'); b.disabled = true; });
-      g.sel = null; g.p.score = (g.p.score || 0) + 10;
-      hud();
+      s.matches++; wordStat(idx).ok++;
+      if (g.mode === 'practice' && !g.missed[idx]) removeFailed(idx); // cleared without a mistake
+      g.sel = null;
+      if (g.mode === 'level') g.gained += 10;
+      persist(); hud();
       if (Object.keys(g.matched).length === g.left.length) win();
     } else {
+      // wrong translation chosen for the selected word: it counts as a miss for that word
+      s.misses++; wordStat(g.sel).miss++; addFailed(g.sel); g.missed[g.sel] = true;
       g.timeLeft = Math.max(0, g.timeLeft - g.p.penalty);
       el.classList.add('wrong'); setTimeout(function () { el.classList.remove('wrong'); }, 320);
-      hud();
+      persist(); hud();
       if (g.timeLeft <= 0) lose();
     }
   }
@@ -104,8 +143,8 @@
   });
 
   function hud() {
-    $('hud-level').textContent = g.level;
-    $('hud-score').textContent = save.score + (g.p.score || 0);
+    $('hud-label').textContent = g.mode === 'practice' ? 'Practice' : 'Level ' + g.level + ' / ' + L.MAX_LEVEL;
+    $('hud-score').textContent = save.score + g.gained;
     $('hud-time').textContent = Math.ceil(g.timeLeft);
     var f = $('bar-fill'); f.style.width = (100 * g.timeLeft / g.p.time) + '%';
     f.classList.toggle('low', g.timeLeft / g.p.time < 0.25);
@@ -113,10 +152,21 @@
 
   function win() {
     g.over = true; stopTimer();
+    var s = stats();
+    if (g.mode === 'practice') {
+      s.practice++; persist();
+      var left = failedIdx().length;
+      overlay('Practice round cleared', left ? left + ' failed word(s) still to practice.' : 'No failed words left. Well done!',
+        left ? 'Practice again' : 'Menu', left ? function () { startRound('practice'); } : toMenu);
+      return;
+    }
     var gained = L.score(g.p, g.timeLeft);
     save.score += gained;
     var next = Math.min(L.MAX_LEVEL, g.level + 1);
     if (g.level >= unlocked()) save.best[key()] = next;
+    s.attempts++; s.wins++;
+    var lv = s.levels[g.level] || (s.levels[g.level] = { wins: 0, losses: 0, best: 0 });
+    lv.wins++; lv.best = Math.max(lv.best, gained);
     persist();
     var done = g.level >= L.MAX_LEVEL;
     overlay(done ? 'You finished all 100 levels!' : 'Level ' + g.level + ' cleared',
@@ -125,7 +175,17 @@
   }
   function lose() {
     g.over = true; stopTimer();
-    overlay('Time is up', 'Level ' + g.level + ' not solved.', 'Retry', function () { startLevel(g.level); });
+    var s = stats();
+    // words that were never matched count as failed, so they show up in practice mode
+    g.left.forEach(function (idx) { if (!g.matched[idx]) { addFailed(idx); if (!g.missed[idx]) { s.misses++; wordStat(idx).miss++; } } });
+    if (g.mode === 'level') {
+      s.attempts++; s.losses++;
+      var lv = s.levels[g.level] || (s.levels[g.level] = { wins: 0, losses: 0, best: 0 });
+      lv.losses++;
+    }
+    persist();
+    var retry = g.mode === 'practice' ? function () { startRound('practice'); } : function () { startLevel(g.level); };
+    overlay('Time is up', g.mode === 'practice' ? 'Practice round not finished.' : 'Level ' + g.level + ' not solved.', 'Retry', retry);
   }
 
   function overlay(title, text, primary, onPrimary) {
@@ -137,15 +197,67 @@
 
   function toMenu() { stopTimer(); hideOverlay(); refreshStart(); show('screen-start'); }
 
+  /* ---------- statistics ---------- */
+
+  function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '–'; }
+
+  function showStats() {
+    var s = stats();
+    var levelsCleared = Object.keys(s.levels).filter(function (k) { return s.levels[k].wins > 0; }).length;
+    var tiles = [
+      ['Highest level reached', unlocked()],
+      ['Levels cleared', levelsCleared + ' / ' + L.MAX_LEVEL],
+      ['Level attempts', s.attempts],
+      ['Win rate', pct(s.wins, s.attempts)],
+      ['Match accuracy', pct(s.matches, s.matches + s.misses)],
+      ['Practice rounds cleared', s.practice],
+      ['Total score', save.score],
+      ['Failed words to practice', failedIdx().length]
+    ];
+    var box = $('stats-tiles'); box.innerHTML = '';
+    tiles.forEach(function (t) {
+      var d = document.createElement('div'); d.className = 'tile';
+      var v = document.createElement('strong'); v.textContent = t[1];
+      var l = document.createElement('span'); l.textContent = t[0];
+      d.appendChild(v); d.appendChild(l); box.appendChild(d);
+    });
+
+    $('stats-pair').textContent = V.LANGUAGES[save.native] + ' → ' + V.LANGUAGES[save.target];
+    var hard = Object.keys(s.words).filter(function (k) { return s.words[k].miss > 0 && byId[k] != null; })
+      .sort(function (a, b) { return s.words[b].miss - s.words[a].miss; }).slice(0, 10);
+    var tb = $('stats-hard'); tb.innerHTML = '';
+    if (!hard.length) {
+      var tr0 = document.createElement('tr'), td0 = document.createElement('td');
+      td0.colSpan = 3; td0.textContent = 'No mistakes recorded yet.'; tr0.appendChild(td0); tb.appendChild(tr0);
+    }
+    hard.forEach(function (k) {
+      var idx = byId[k], tr = document.createElement('tr');
+      [word(idx, save.native), word(idx, save.target), s.words[k].miss + ' miss' + (s.words[k].miss > 1 ? 'es' : '')]
+        .forEach(function (txt) { var td = document.createElement('td'); td.textContent = txt; tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+    show('screen-stats');
+  }
+
+  /* ---------- init ---------- */
+
   function init() {
     fillSelect($('sel-native'), save.native); fillSelect($('sel-target'), save.target);
     function changed() {
       save.native = $('sel-native').value; save.target = $('sel-target').value;
-      $('btn-start').disabled = save.native === save.target;
+      var same = save.native === save.target;
+      $('btn-start').disabled = same; $('btn-stats').disabled = same;
       persist(); refreshStart();
     }
     $('sel-native').onchange = $('sel-target').onchange = changed;
     $('btn-start').onclick = function () { startLevel(unlocked()); };
+    $('btn-practice').onclick = function () { startRound('practice'); };
+    $('btn-stats').onclick = showStats;
+    $('btn-stats-back').onclick = toMenu;
+    $('btn-stats-reset').onclick = function () {
+      if (!confirm('Delete statistics and the failed-words list for this language pair?')) return;
+      delete save.stats[key()]; delete save.failed[key()]; persist(); showStats();
+    };
     $('btn-reset').onclick = function () { delete save.best[key()]; persist(); refreshStart(); };
     $('btn-quit').onclick = toMenu;
     $('ov-secondary').onclick = toMenu;

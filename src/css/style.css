@@ -44,3 +44,9 @@ body { -webkit-tap-highlight-color: transparent; padding: env(safe-area-inset-to
 }
 .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, .5); display: flex; align-items: flex-start; justify-content: center; padding: 16px; }
 .overlay .card { width: min(420px, 100%); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin: 16px 0; }
+.tile { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 2px; }
+.tile strong { font-size: 22px; } .tile span { font-size: 12px; color: var(--muted); }
+table.hard { width: 100%; border-collapse: collapse; text-align: left; }
+table.hard td { padding: 6px 4px; border-bottom: 1px solid var(--line); }
+table.hard td:last-child { text-align: right; color: var(--bad); }

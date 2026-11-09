@@ -14,6 +14,26 @@ test('difficulty never decreases across 100 levels', () => {
   }
 });
 
+test('options grow by one per level up to the cap', () => {
+  for (let l = 1; l <= 100; l++) {
+    assert.strictEqual(Levels.params(l).distractors, Math.min(Levels.MAX_DISTRACTORS, l));
+  }
+  assert.strictEqual(Levels.params(1).distractors, 1);
+  assert.strictEqual(Levels.params(2).distractors, 2);
+});
+
+test('practice round uses only failed words plus distractors', () => {
+  const n = Vocab.ENTRIES.length;
+  const failed = [3, 7, 9];
+  const r = Levels.practiceRound(failed, n);
+  assert.deepStrictEqual([...r.pairs].sort((a, b) => a - b), failed);
+  assert.strictEqual(r.distractors.length, 2);
+  r.distractors.forEach(d => assert.ok(!failed.includes(d)));
+  const many = Levels.practiceRound(Array.from({ length: 20 }, (_, i) => i), n);
+  assert.strictEqual(many.pairs.length, 8);
+  assert.strictEqual(many.params.time, 8 * 8);
+});
+
 test('every level picks valid, unique words', () => {
   const n = Vocab.ENTRIES.length;
   for (let l = 1; l <= 100; l++) {

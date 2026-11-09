@@ -21,13 +21,17 @@
       <p id="progress-info" class="sub"></p>
       <div class="row">
         <button id="btn-start" class="primary">Start</button>
+        <button id="btn-practice">Practice failed words (0)</button>
+      </div>
+      <div class="row">
+        <button id="btn-stats" class="ghost">Statistics</button>
         <button id="btn-reset" class="ghost">Reset progress</button>
       </div>
     </section>
 
     <section id="screen-game" class="hidden">
       <header class="hud">
-        <div>Level <strong id="hud-level">1</strong> / 100</div>
+        <div id="hud-label"></div>
         <div>Score <strong id="hud-score">0</strong></div>
         <div>Time <strong id="hud-time">0</strong>s</div>
         <button id="btn-quit" class="ghost small">Menu</button>
@@ -38,6 +42,18 @@
         <div class="panel"><h2 id="title-target"></h2><ul id="list-target"></ul></div>
       </div>
       <p class="hint">Pick a word on the left, then its translation on the right. A wrong match costs time.</p>
+    </section>
+
+    <section id="screen-stats" class="card hidden">
+      <h1>Statistics</h1>
+      <p id="stats-pair" class="sub"></p>
+      <div id="stats-tiles" class="tiles"></div>
+      <h2 class="sub">Hardest words</h2>
+      <table class="hard"><tbody id="stats-hard"></tbody></table>
+      <div class="row">
+        <button id="btn-stats-back" class="primary">Back</button>
+        <button id="btn-stats-reset" class="ghost">Reset statistics</button>
+      </div>
     </section>
 
     <div id="overlay" class="overlay hidden">

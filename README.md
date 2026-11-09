@@ -30,12 +30,17 @@ The timer pauses while the app is in the background.
 - A wrong match costs 3 seconds. Running out of time means retrying the level.
 - Score per level: 10 per pair + 2 per second left.
 
+## Practice and statistics
+
+- Words you miss or run out of time on go to a failed list. "Practice failed words" replays them (up to 8 plus 2 distractors) until you get them right.
+- "Statistics" shows level progress, win rate, match accuracy and your hardest words per language pair.
+
 ## Difficulty curve (`src/js/levels.js`)
 
 | Knob | Level 1 | Level 100 |
 |---|---|---|
 | Pairs to match | 4 | 12 |
-| Distractor translations on the right | 0 | 6 |
+| Distractor translations on the right | 1 (+1 per level) | 12 (capped) |
 | Time per pair | ~8.9 s | ~3.2 s |
 | Vocabulary pool (easy → hard) | 20 words | all words, half drawn from the hardest 40% |
 
