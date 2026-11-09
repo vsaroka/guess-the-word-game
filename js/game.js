@@ -177,8 +177,7 @@
   function lose() {
     g.over = true; stopTimer();
     var s = stats();
-    // words that were never matched count as failed, so they show up in practice mode
-    g.left.forEach(function (idx) { if (!g.matched[idx] && !g.fillers[idx]) { addFailed(idx); if (!g.missed[idx]) { s.misses++; wordStat(idx).miss++; } } });
+    // only wrong picks count as misses; words left open at timeout are not recorded as mistakes
     if (g.mode === 'level') {
       s.attempts++; s.losses++;
       var lv = s.levels[g.level] || (s.levels[g.level] = { wins: 0, losses: 0, best: 0 });
