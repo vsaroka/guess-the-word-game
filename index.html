@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guess the Word</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main>
+    <section id="screen-start" class="card">
+      <h1>Guess the Word</h1>
+      <p class="sub">Match each word you know with its translation. Beat the clock across 100 levels.</p>
+      <div class="row">
+        <label>I speak <select id="sel-native"></select></label>
+        <label>I want to learn <select id="sel-target"></select></label>
+      </div>
+      <p id="progress-info" class="sub"></p>
+      <div class="row">
+        <button id="btn-start" class="primary">Start</button>
+        <button id="btn-reset" class="ghost">Reset progress</button>
+      </div>
+    </section>
+
+    <section id="screen-game" class="hidden">
+      <header class="hud">
+        <div>Level <strong id="hud-level">1</strong> / 100</div>
+        <div>Score <strong id="hud-score">0</strong></div>
+        <div>Time <strong id="hud-time">0</strong>s</div>
+        <button id="btn-quit" class="ghost small">Menu</button>
+      </header>
+      <div class="bar"><div id="bar-fill"></div></div>
+      <div class="panels">
+        <div class="panel"><h2 id="title-native"></h2><ul id="list-native"></ul></div>
+        <div class="panel"><h2 id="title-target"></h2><ul id="list-target"></ul></div>
+      </div>
+      <p class="hint">Pick a word on the left, then its translation on the right. A wrong match costs time.</p>
+    </section>
+
+    <div id="overlay" class="overlay hidden">
+      <div class="card">
+        <h2 id="ov-title"></h2>
+        <p id="ov-text"></p>
+        <div class="row">
+          <button id="ov-primary" class="primary"></button>
+          <button id="ov-secondary" class="ghost">Menu</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/vocab.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
