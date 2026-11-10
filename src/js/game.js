@@ -261,6 +261,8 @@
     $('btn-reset').onclick = function () { delete save.best[key()]; persist(); refreshStart(); };
     $('btn-quit').onclick = toMenu;
     $('ov-secondary').onclick = toMenu;
+    var v = window.APP_VERSION;
+    if (v) $('version').textContent = 'Version ' + v.version + ' · built ' + v.built + (v.commit ? ' · ' + v.commit : '');
     changed(); show('screen-start');
   }
   init();

@@ -24,6 +24,11 @@ The game is a PWA (`manifest.webmanifest`, `sw.js`, `icons/`). It needs HTTPS (o
 The service worker is network-first: online it always loads the newest files, offline it falls back to the cache. Bump `CACHE` in `src/sw.js` when you change the file list. An installed copy running an older service worker needs one or two reloads (or closing and reopening the app) to pick up the first network-first version.
 The timer pauses while the app is in the background.
 
+## Version and build date
+
+The start screen shows `Version x.y.z · built <date> · <commit>`, so you can see which copy of the game a device runs.
+Run `npm run stamp` before installing or publishing: it writes `src/js/version.js` from the version in `package.json`, the current time and the last git commit. Bump `version` in `package.json` for releases.
+
 ## Rules
 
 - 100 levels per language pair; progress and score are stored in `localStorage`.
