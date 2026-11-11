@@ -54,6 +54,7 @@
 
   function show(screen) {
     ['screen-start', 'screen-game', 'screen-stats'].forEach(function (s) { $(s).classList.toggle('hidden', s !== screen); });
+    document.body.classList.toggle('playing', screen === 'screen-game'); // game screen never scrolls
   }
 
   function word(idx, lang) { return V.ENTRIES[idx][lang]; }
@@ -70,34 +71,52 @@
       pick = L.pickWords(V.ENTRIES.length, level);
     }
     var p = pick.params;
-    // the right list holds the translations plus distractors, shuffled
-    var right = L.shuffle(pick.pairs.concat(pick.distractors));
-    g = { mode: mode, level: level, p: p, left: pick.pairs, right: right, matched: {}, missed: {}, gained: 0,
+    g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0,
           fillers: {}, sel: null, timeLeft: p.time, over: false };
     (pick.fillers || []).forEach(function (i) { g.fillers[i] = true; }); // padding words in practice: not tracked
     $('title-native').textContent = V.LANGUAGES[save.native];
     $('title-target').textContent = V.LANGUAGES[save.target];
-    render();
     hideOverlay();
     show('screen-game');
+    // only as many words as fit on screen are shown; the rest follow as pairs are matched
+    var first = g.queue.splice(0, visibleSlots(p.pairs));
+    render(first, L.shuffle(first));
     g.timer = setInterval(tick, 250);
     g.last = Date.now();
     hud();
   }
   function startLevel(level) { startRound('level', level); }
 
-  function render() {
-    renderList($('list-native'), g.left, save.native, 'L');
-    renderList($('list-target'), g.right, save.target, 'R');
+  /** How many rows fit between the top of the lists and the bottom of the screen (no scrolling). */
+  function visibleSlots(total) {
+    var ul = $('list-native');
+    ul.innerHTML = '';
+    var probe = document.createElement('li'), b = document.createElement('button');
+    b.textContent = 'Mg'; probe.appendChild(b); ul.appendChild(probe);
+    var rowH = probe.getBoundingClientRect().height;
+    var gap = parseFloat(getComputedStyle(ul).rowGap) || 8;
+    var avail = window.innerHeight - ul.getBoundingClientRect().top - 28;
+    ul.innerHTML = '';
+    var n = Math.floor((avail + gap) / (rowH + gap));
+    return Math.max(3, Math.min(total, n));
+  }
+
+  function render(leftIdx, rightIdx) {
+    renderList($('list-native'), leftIdx, save.native, 'L');
+    renderList($('list-target'), rightIdx, save.target, 'R');
   }
   function renderList(ul, items, lang, side) {
     ul.innerHTML = '';
     items.forEach(function (idx) {
-      var li = document.createElement('li'), b = document.createElement('button');
-      b.textContent = word(idx, lang); b.dataset.idx = idx; b.dataset.side = side;
-      b.addEventListener('click', function () { pick(side, idx, b); });
-      li.appendChild(b); ul.appendChild(li);
+      var li = document.createElement('li');
+      li.appendChild(makeButton(idx, lang, side)); ul.appendChild(li);
     });
+  }
+  function makeButton(idx, lang, side) {
+    var b = document.createElement('button');
+    b.textContent = word(idx, lang); b.dataset.idx = idx; b.dataset.side = side;
+    b.addEventListener('click', function () { pick(side, idx, b); });
+    return b;
   }
 
   function btn(side, idx) { return document.querySelector('button[data-side="' + side + '"][data-idx="' + idx + '"]'); }
@@ -118,7 +137,14 @@
       g.sel = null;
       if (g.mode === 'level') g.gained += 10;
       persist(); hud();
-      if (Object.keys(g.matched).length === g.left.length) win();
+      if (Object.keys(g.matched).length === g.left.length) { win(); return; }
+      // after a short flash the matched pair's slots are refilled with the next pair
+      var next = g.queue.shift(), round = g, leftSlot = leftBtn.parentNode, rightSlot = el.parentNode;
+      if (next != null) setTimeout(function () {
+        if (g !== round || round.over) return;
+        leftSlot.replaceChildren(makeButton(next, save.native, 'L'));
+        rightSlot.replaceChildren(makeButton(next, save.target, 'R'));
+      }, 250);
     } else {
       // wrong translation chosen for the selected word: it counts as a miss for that word
       if (!g.fillers[g.sel]) { s.misses++; wordStat(g.sel).miss++; addFailed(g.sel); g.missed[g.sel] = true; }
