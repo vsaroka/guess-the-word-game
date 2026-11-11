@@ -24,6 +24,13 @@ The game is a PWA (`manifest.webmanifest`, `sw.js`, `icons/`). It needs HTTPS (o
 The service worker is network-first: online it always loads the newest files, offline it falls back to the cache. Bump `CACHE` in `src/sw.js` when you change the file list. An installed copy running an older service worker needs one or two reloads (or closing and reopening the app) to pick up the first network-first version.
 The timer pauses while the app is in the background.
 
+## Hosting (GitHub Pages)
+
+The game is published from the `gh-pages` branch, which holds only the contents of `src/`:
+https://vsaroka.github.io/guess-the-word-game/
+
+To publish a new version: commit your changes, then run `npm run deploy`. It stamps the version, pushes `main`, and pushes `src/` to `gh-pages`. Pages updates within a minute or two. Raise `version` in `package.json` first for a new release number.
+
 ## Version and build date
 
 The start screen shows `Version x.y.z · built <date> · <commit>`, so you can see which copy of the game a device runs.

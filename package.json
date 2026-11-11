@@ -6,6 +6,7 @@
   "scripts": {
     "start": "npx http-server src -p 8080 -c-1",
     "stamp": "node scripts/stamp-version.js",
+    "deploy": "node scripts/deploy.js",
     "test": "node --test test/"
   },
   "license": "UNLICENSED"
