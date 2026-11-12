@@ -145,6 +145,10 @@
         leftSlot.replaceChildren(makeButton(next, save.native, 'L'));
         rightSlot.replaceChildren(makeButton(next, save.target, 'R'));
       }, 250);
+      // only one word left: it is resolved automatically (no guess needed)
+      if (Object.keys(g.matched).length === g.left.length - 1) {
+        setTimeout(function () { autoResolve(round); }, (next != null ? 250 : 0) + 400);
+      }
     } else {
       // wrong translation chosen for the selected word: it counts as a miss for that word
       if (!g.fillers[g.sel]) { s.misses++; wordStat(g.sel).miss++; addFailed(g.sel); g.missed[g.sel] = true; }
@@ -153,6 +157,19 @@
       persist(); hud();
       if (g.timeLeft <= 0) lose();
     }
+  }
+
+  /** Matches the last open word for the player. Not counted as a guess in statistics or practice. */
+  function autoResolve(round) {
+    if (g !== round || round.over) return;
+    var last = round.left.filter(function (i) { return !round.matched[i]; })[0];
+    if (last == null) return;
+    var lb = btn('L', last), rb = btn('R', last);
+    if (!lb || !rb) return;
+    round.matched[last] = true; round.sel = null;
+    [lb, rb].forEach(function (b) { b.classList.remove('sel'); b.classList.add('done'); b.disabled = true; });
+    if (round.mode === 'level') round.gained += 10;
+    hud(); win();
   }
 
   function tick() {

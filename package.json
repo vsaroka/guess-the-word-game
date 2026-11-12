@@ -1,6 +1,6 @@
 {
   "name": "guess-the-word-game",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Browser prototype: match words in your language with translations in the language you learn. 100 timed levels.",
   "private": true,
   "scripts": {
