@@ -191,7 +191,8 @@
     $('hud-score').textContent = save.score + g.gained;
     $('hud-time').textContent = Math.ceil(g.timeLeft);
     var f = $('bar-fill'); f.style.width = (100 * g.timeLeft / g.p.time) + '%';
-    f.classList.toggle('low', g.timeLeft / g.p.time < 0.25);
+    f.classList.toggle('low', g.timeLeft <= 15);   // red for the last 15 seconds
+    f.classList.toggle('blink', g.timeLeft <= 5);  // blinking for the last 5 seconds
   }
 
   function win() {
