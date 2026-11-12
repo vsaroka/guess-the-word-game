@@ -52,7 +52,8 @@ Per language pair, opened with "Statistics" on the start screen:
 
 ## Timer
 
-- Countdown bar and seconds display. The bar turns red below 25% of the time.
+- Seconds display plus a thin time bar in the header that shrinks from right to left.
+- The bar is green at the start, turns red for the last 15 seconds, and blinks for the last 5 seconds (no blinking if the device asks for reduced motion).
 - The timer pauses when the tab or app goes to the background and resumes when it returns.
 
 ## Scoring and progress
