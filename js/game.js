@@ -2,6 +2,7 @@
   var V = window.Vocab, L = window.Levels;
   var $ = function (id) { return document.getElementById(id); };
   var STORE = 'guess-the-word-v1';
+  var PAIR_FLASH_MS = 500; // a matched pair stays visible (green) this long before it is replaced
 
   function defaults() { return { native: 'de', target: 'fr', best: {}, score: 0, failed: {}, stats: {} }; }
   function load() {
@@ -72,7 +73,7 @@
     }
     var p = pick.params;
     g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0,
-          fillers: {}, sel: null, timeLeft: p.time, over: false };
+          fillers: {}, sel: null, selR: null, timeLeft: p.time, over: false };
     (pick.fillers || []).forEach(function (i) { g.fillers[i] = true; }); // padding words in practice: not tracked
     $('title-native').textContent = V.LANGUAGES[save.native];
     $('title-target').textContent = V.LANGUAGES[save.target];
@@ -121,37 +122,46 @@
 
   function btn(side, idx) { return document.querySelector('button[data-side="' + side + '"][data-idx="' + idx + '"]'); }
 
+  // a pair can be picked in either order: the left word first, or its translation first
   function pick(side, idx, el) {
     if (!g || g.over || g.matched[idx]) return;
     if (side === 'L') {
+      if (g.selR != null) { attempt(idx, g.selR, el); return; }
       if (g.sel != null) btn('L', g.sel).classList.remove('sel');
       g.sel = idx; el.classList.add('sel'); return;
     }
-    if (g.sel == null) return; // choose a left word first
-    var leftBtn = btn('L', g.sel), s = stats();
-    if (g.sel === idx) {
+    if (g.sel != null) { attempt(g.sel, idx, el); return; }
+    if (g.selR != null) btn('R', g.selR).classList.remove('sel');
+    g.selR = idx; el.classList.add('sel');
+  }
+
+  /** Compares a left word with a chosen translation. `el` is the button that was clicked second. */
+  function attempt(leftIdx, rightIdx, el) {
+    var leftBtn = btn('L', leftIdx), rightBtn = btn('R', rightIdx), s = stats();
+    if (leftIdx === rightIdx) {
+      var idx = leftIdx;
       g.matched[idx] = true;
-      [leftBtn, el].forEach(function (b) { b.classList.remove('sel'); b.classList.add('done'); b.disabled = true; });
+      [leftBtn, rightBtn].forEach(function (b) { b.classList.remove('sel'); b.classList.add('done'); b.disabled = true; });
       s.matches++; wordStat(idx).ok++;
       if (g.mode === 'practice' && !g.missed[idx]) removeFailed(idx); // cleared without a mistake
-      g.sel = null;
+      g.sel = null; g.selR = null;
       if (g.mode === 'level') g.gained += 10;
       persist(); hud();
       if (Object.keys(g.matched).length === g.left.length) { win(); return; }
       // after a short flash the matched pair's slots are refilled with the next pair
-      var next = g.queue.shift(), round = g, leftSlot = leftBtn.parentNode, rightSlot = el.parentNode;
+      var next = g.queue.shift(), round = g, leftSlot = leftBtn.parentNode, rightSlot = rightBtn.parentNode;
       if (next != null) setTimeout(function () {
         if (g !== round || round.over) return;
         leftSlot.replaceChildren(makeButton(next, save.native, 'L'));
         rightSlot.replaceChildren(makeButton(next, save.target, 'R'));
-      }, 250);
+      }, PAIR_FLASH_MS);
       // only one word left: it is resolved automatically (no guess needed)
       if (Object.keys(g.matched).length === g.left.length - 1) {
-        setTimeout(function () { autoResolve(round); }, (next != null ? 250 : 0) + 400);
+        setTimeout(function () { autoResolve(round); }, (next != null ? PAIR_FLASH_MS : 0) + 400);
       }
     } else {
-      // wrong translation chosen for the selected word: it counts as a miss for that word
-      if (!g.fillers[g.sel]) { s.misses++; wordStat(g.sel).miss++; addFailed(g.sel); g.missed[g.sel] = true; }
+      // wrong pair: it counts as a miss for the left word, whichever column was clicked first
+      if (!g.fillers[leftIdx]) { s.misses++; wordStat(leftIdx).miss++; addFailed(leftIdx); g.missed[leftIdx] = true; }
       g.timeLeft = Math.max(0, g.timeLeft - g.p.penalty);
       el.classList.add('wrong'); setTimeout(function () { el.classList.remove('wrong'); }, 320);
       persist(); hud();
@@ -166,7 +176,7 @@
     if (last == null) return;
     var lb = btn('L', last), rb = btn('R', last);
     if (!lb || !rb) return;
-    round.matched[last] = true; round.sel = null;
+    round.matched[last] = true; round.sel = null; round.selR = null;
     [lb, rb].forEach(function (b) { b.classList.remove('sel'); b.classList.add('done'); b.disabled = true; });
     if (round.mode === 'level') round.gained += 10;
     hud(); win();
