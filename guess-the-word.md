@@ -4,9 +4,9 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 
 ## Gameplay
 
-- **Two-panel matching.** The left panel lists words in the language the player knows. The right panel lists shuffled translations in the language being learned. The player selects a left word, then its translation on the right.
-- **Correct match.** Both entries turn green and are locked.
-- **Wrong match.** The tapped entry shakes and the timer loses 3 seconds.
+- **Two-panel matching.** The left panel lists words in the language the player knows. The right panel lists shuffled translations in the language being learned. The player taps a word in either column and then its partner in the other column, so the pair can be picked left-first or right-first. Tapping another word in the same column changes the selection.
+- **Correct match.** Both entries turn green and are locked. They stay visible for 0.5 seconds before the next pair takes their place.
+- **Wrong match.** The second tapped entry shakes and the timer loses 3 seconds. The miss is recorded for the left word. The first selection stays.
 - **Last word resolves itself.** When only one word is left, it is matched automatically after a short delay. It scores the normal 10 points but is not counted in statistics, and in practice mode it does not leave the failed list.
 - **Level cleared** when every pair is matched. A result overlay offers "Next level".
 - **Level failed** when the timer reaches 0. The overlay offers "Retry" for the same level.
