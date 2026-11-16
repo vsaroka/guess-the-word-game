@@ -15,9 +15,9 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 
 ## Languages
 
-- Four languages: German (`de`), French (`fr`), English (`en`), Spanish (`es`).
+- Seven languages: German (`de`), French (`fr`), English (`en`), Spanish (`es`), Russian (`ru`), Italian (`it`), Bavarian (`bar`, shown as "Bairisch"). Bavarian has no fixed spelling; the words are a common phonetic spelling and may differ by region.
 - The player picks the language they speak and the language they want to learn. Any combination works except identical languages (Start is disabled).
-- About 130 vocabulary entries, ordered from easy to hard. Every entry has all four languages.
+- About 130 vocabulary entries, ordered from easy to hard. Every entry has all seven languages.
 
 ## Levels and difficulty
 

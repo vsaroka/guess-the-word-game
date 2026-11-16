@@ -60,7 +60,7 @@ Run `npm run stamp` before installing or publishing: it writes `src/js/version.j
 ```
 src/index.html        screens (start, game, result overlay)
 src/css/style.css
-src/js/vocab.js       vocabulary ordered easy→hard; de, fr, en, es
+src/js/vocab.js       vocabulary ordered easy→hard; de, fr, en, es, ru, it, bar
 src/js/levels.js      pure difficulty/selection logic (browser + Node)
 src/js/game.js        UI, timer, matching, persistence
 test/levels.test.js
