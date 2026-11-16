@@ -43,18 +43,33 @@
 
   /**
    * Choose vocabulary indexes for a level.
-   * Half of the pairs come from the hardest 40% of the pool, so later levels feel harder.
+   * `known` (optional) lists indexes the player has already guessed. Words not yet guessed are
+   * always taken first, so every level teaches as many new words as possible. If the normal pool
+   * holds too few new words it is extended toward harder words until there are enough.
+   * Within that, half of the pairs come from the hardest 40% of the pool, so later levels feel harder.
    */
-  function pickWords(total, level, rng) {
+  function pickWords(total, level, rng, known) {
     var p = params(level);
+    var isKnown = {}; (known || []).forEach(function (i) { isKnown[i] = true; });
     var size = poolSize(level, total, p);
+    function fresh(n) { var c = 0; for (var i = 0; i < n; i++) if (!isKnown[i]) c++; return c; }
+    while (size < total && fresh(size) < p.pairs) size++;
     var hardStart = Math.floor(size * 0.6);
     var all = []; for (var i = 0; i < size; i++) all.push(i);
-    var hard = shuffle(all.filter(function (i) { return i >= hardStart; }), rng);
-    var easy = shuffle(all.filter(function (i) { return i < hardStart; }), rng);
-    var nHard = Math.min(hard.length, Math.ceil(p.pairs / 2));
-    var pairs = hard.slice(0, nHard).concat(easy.slice(0, p.pairs - nHard));
-    return { params: p, pairs: shuffle(pairs, rng), distractors: [] };
+    function group(from, to, wantKnown) {
+      return shuffle(all.filter(function (i) { return i >= from && i < to && !!isKnown[i] === wantKnown; }), rng);
+    }
+    var hardN = group(hardStart, size, false), easyN = group(0, hardStart, false);
+    var hardK = group(hardStart, size, true), easyK = group(0, hardStart, true);
+    var nHard = Math.ceil(p.pairs / 2);
+    var chosen = hardN.slice(0, nHard);
+    chosen = chosen.concat(easyN.slice(0, p.pairs - chosen.length));
+    // not enough in one half: still prefer new words from the other half over repeating known ones
+    chosen = chosen.concat(hardN.slice(chosen.filter(function (i) { return i >= hardStart; }).length),
+                           easyN.slice(chosen.filter(function (i) { return i < hardStart; }).length)).slice(0, p.pairs);
+    var rest = shuffle(hardK.concat(easyK), rng);
+    chosen = chosen.concat(rest.slice(0, p.pairs - chosen.length));
+    return { params: p, pairs: shuffle(chosen, rng), distractors: [] };
   }
 
   /**
