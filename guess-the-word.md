@@ -8,7 +8,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 - **Correct match.** Both entries turn green and are locked. They stay visible for 0.5 seconds before the next pair takes their place.
 - **Wrong match.** The second tapped entry shakes and the timer loses 3 seconds. The miss is recorded for the left word. The first selection stays.
 - **Last word resolves itself.** When only one word is left, it is matched automatically after a short delay. It scores the normal 10 points but is not counted in statistics, and in practice mode it does not leave the failed list.
-- **Level cleared** when every pair is matched. A result overlay offers "Next level".
+- **Level cleared** when every pair is matched. The result overlay shows points, time left, new words learned in this level and the learned total (for example "5 new words · 8/119 learned"), and offers "Next level".
 - **Level failed** when the timer reaches 0. The overlay offers "Retry" for the same level.
 - **Finish.** Clearing level 100 shows a completion message with "Play again", which restarts from level 1.
 - **Menu button** in the game bar and on the overlay returns to the start screen and stops the timer.
@@ -31,7 +31,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 
 - The level time is pairs multiplied by the time per pair.
 - Half of the pairs in each level come from the hardest 40% of the pool, so later levels feel harder.
-- Words are random each attempt. They are unique within a level.
+- Words are random each attempt and unique within a level. Words the player has not guessed yet are always picked first, so each level teaches as many new words as possible. If the normal pool has too few new words, it is extended toward harder words. Known words are only used once every word has been guessed or the new ones run out.
 
 ## Practice mode (retry failed words)
 
@@ -46,6 +46,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 Per language pair, opened with "Statistics" on the start screen:
 - highest level reached, levels cleared (of 100), level attempts, win rate
 - match accuracy (correct matches against mistakes), practice rounds cleared, total score
+- words guessed (of all words) and words left to learn
 - number of failed words waiting for practice
 - the 10 hardest words with their miss counts
 - "Reset statistics" clears the statistics and the failed list for the pair (with a confirmation).
@@ -80,7 +81,7 @@ Per language pair, opened with "Statistics" on the start screen:
 
 ## Project and tests
 
-- `test/levels.test.js` (Node's built-in test runner, `npm test`) checks that difficulty never decreases, every level picks valid unique words, and every language has complete, unambiguous vocabulary. It also covers the +1 option growth and the practice round. Five tests, all passing.
+- `test/levels.test.js` (Node's built-in test runner, `npm test`) checks that difficulty never decreases, every level picks valid unique words, and every language has complete, unambiguous vocabulary. It also covers the +1 option growth and the practice round. Six tests, all passing (including that levels prefer unguessed words).
 - `npm start` serves `src/` on port 8080.
 
 ## Not implemented

@@ -63,3 +63,18 @@ test('vocabulary is complete and unambiguous per language', () => {
     });
   });
 });
+
+test('levels prefer words the player has not guessed yet', () => {
+  const total = Vocab.ENTRIES.length;
+  for (const level of [1, 5, 10, 20, 40, 70, 100]) {
+    const p = Levels.params(level);
+    for (const knownCount of [0, 10, 40, 80, 110, total]) {
+      const known = []; for (let i = 0; i < knownCount; i++) known.push(i);
+      const r = Levels.pickWords(total, level, null, known);
+      assert.strictEqual(r.pairs.length, Math.min(p.pairs, total));
+      assert.strictEqual(new Set(r.pairs).size, r.pairs.length, 'dups');
+      const fresh = r.pairs.filter(i => i >= knownCount).length;
+      assert.strictEqual(fresh, Math.min(r.pairs.length, total - knownCount), 'level ' + level + ' known ' + knownCount);
+    }
+  }
+});

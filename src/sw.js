@@ -1,5 +1,5 @@
 /* Offline cache. Bump CACHE when any cached file changes. */
-var CACHE = 'guess-the-word-v12';
+var CACHE = 'guess-the-word-v13';
 var FILES = [
   './', './index.html', './manifest.webmanifest',
   './css/style.css',

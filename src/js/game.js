@@ -28,6 +28,8 @@
     return s;
   }
   function wordStat(idx) { var w = stats().words; return w[id(idx)] || (w[id(idx)] = { ok: 0, miss: 0 }); }
+  function isGuessed(idx) { var w = stats().words[id(idx)]; return !!(w && w.ok > 0); }
+  function guessedIdx() { var r = []; for (var i = 0; i < V.ENTRIES.length; i++) if (isGuessed(i)) r.push(i); return r; }
   function failedIdx() { return (save.failed[key()] || []).map(function (i) { return byId[i]; }).filter(function (i) { return i != null; }); }
   function addFailed(idx) {
     var list = save.failed[key()] || (save.failed[key()] = []);
@@ -69,10 +71,10 @@
       pick = L.practiceRound(failedIdx(), V.ENTRIES.length);
       if (!pick.pairs.length) { toMenu(); return; }
     } else {
-      pick = L.pickWords(V.ENTRIES.length, level);
+      pick = L.pickWords(V.ENTRIES.length, level, null, guessedIdx());
     }
     var p = pick.params;
-    g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0,
+    g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0, fresh: 0,
           fillers: {}, sel: null, selR: null, timeLeft: p.time, over: false };
     (pick.fillers || []).forEach(function (i) { g.fillers[i] = true; }); // padding words in practice: not tracked
     $('title-native').textContent = V.LANGUAGES[save.native];
@@ -142,7 +144,7 @@
       var idx = leftIdx;
       g.matched[idx] = true;
       [leftBtn, rightBtn].forEach(function (b) { b.classList.remove('sel'); b.classList.add('done'); b.disabled = true; });
-      s.matches++; wordStat(idx).ok++;
+      s.matches++; if (!isGuessed(idx)) g.fresh++; wordStat(idx).ok++;
       if (g.mode === 'practice' && !g.missed[idx]) removeFailed(idx); // cleared without a mistake
       g.sel = null; g.selR = null;
       if (g.mode === 'level') g.gained += 10;
@@ -225,8 +227,12 @@
     persist();
     var done = g.level >= L.MAX_LEVEL;
     overlay(done ? 'You finished all 100 levels!' : 'Level ' + g.level + ' cleared',
-      '+' + gained + ' points · ' + Math.ceil(g.timeLeft) + 's left',
+      '+' + gained + ' points · ' + Math.ceil(g.timeLeft) + 's left' + wordsLine(),
       done ? 'Play again' : 'Next level', function () { startLevel(done ? 1 : next); });
+  }
+  function wordsLine() {
+    var n = guessedIdx().length, t = V.ENTRIES.length;
+    return ' · ' + g.fresh + ' new word' + (g.fresh === 1 ? '' : 's') + ' · ' + n + '/' + t + ' learned';
   }
   function lose() {
     g.over = true; stopTimer();
@@ -266,6 +272,8 @@
       ['Match accuracy', pct(s.matches, s.matches + s.misses)],
       ['Practice rounds cleared', s.practice],
       ['Total score', save.score],
+      ['Words guessed', guessedIdx().length + ' / ' + V.ENTRIES.length],
+      ['Words left to learn', V.ENTRIES.length - guessedIdx().length],
       ['Failed words to practice', failedIdx().length]
     ];
     var box = $('stats-tiles'); box.innerHTML = '';
