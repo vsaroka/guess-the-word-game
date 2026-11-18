@@ -10,23 +10,23 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 - **Last word resolves itself.** When only one word is left, it is matched automatically after a short delay. It scores the normal 10 points but is not counted in statistics, and in practice mode it does not leave the failed list.
 - **Level cleared** when every pair is matched. The result overlay shows points, time left, new words learned in this level and the learned total (for example "5 new words · 8/119 learned"), and offers "Next level".
 - **Level failed** when the timer reaches 0. The overlay offers "Retry" for the same level.
-- **Finish.** Clearing level 100 shows a completion message with "Play again", which restarts from level 1.
+- **Finish.** Clearing level 150 shows a completion message with "Play again", which restarts from level 1.
 - **Menu button** in the game bar and on the overlay returns to the start screen and stops the timer.
 
 ## Languages
 
 - Seven languages: German (`de`), French (`fr`), English (`en`), Spanish (`es`), Russian (`ru`), Italian (`it`), Bavarian (`bar`, shown as "Bairisch"). Bavarian has no fixed spelling; the words are a common phonetic spelling and may differ by region.
 - The player picks the language they speak and the language they want to learn. Any combination works except identical languages (Start is disabled).
-- About 130 vocabulary entries, ordered from easy to hard. Every entry has all seven languages.
+- 535 vocabulary entries (common nouns, verbs, adjectives, colours, numbers, weekdays and some abstract words), ordered from easy to hard. Every entry has all seven languages.
 
 ## Levels and difficulty
 
-100 levels. Difficulty is computed in `src/js/levels.js`.
+150 levels. Difficulty is computed in `src/js/levels.js`.
 
-| Parameter | Level 1 | Level 100 |
+| Parameter | Level 1 | Level 150 |
 |---|---|---|
 | Words in each panel (same count on both sides, every word has a match) | 4 (two more every level) | 30 (capped from level 14) |
-| Time per pair | about 8.9 s | 3.2 s (floor) |
+| Time per pair | about 8.9 s | 2.4 s (3.2 s at level 100) |
 | Vocabulary pool | 20 easiest words | all words |
 
 - The level time is pairs multiplied by the time per pair.
@@ -44,7 +44,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 ## Statistics
 
 Per language pair, opened with "Statistics" on the start screen:
-- highest level reached, levels cleared (of 100), level attempts, win rate
+- highest level reached, levels cleared (of 150), level attempts, win rate
 - match accuracy (correct matches against mistakes), practice rounds cleared, total score
 - words guessed (of all words) and words left to learn
 - number of failed words waiting for practice
@@ -81,7 +81,7 @@ Per language pair, opened with "Statistics" on the start screen:
 
 ## Project and tests
 
-- `test/levels.test.js` (Node's built-in test runner, `npm test`) checks that difficulty never decreases, every level picks valid unique words, and every language has complete, unambiguous vocabulary. It also covers the +1 option growth and the practice round. Six tests, all passing (including that levels prefer unguessed words).
+- `test/levels.test.js` (Node's built-in test runner, `npm test`) checks that difficulty never decreases, every level picks valid unique words, and every language has complete, unambiguous vocabulary. It also covers the +1 option growth and the practice round. Seven tests, all passing (including that levels prefer unguessed words).
 - `npm start` serves `src/` on port 8080.
 
 ## Not implemented

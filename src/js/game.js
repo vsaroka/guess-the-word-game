@@ -226,7 +226,7 @@
     lv.wins++; lv.best = Math.max(lv.best, gained);
     persist();
     var done = g.level >= L.MAX_LEVEL;
-    overlay(done ? 'You finished all 100 levels!' : 'Level ' + g.level + ' cleared',
+    overlay(done ? 'You finished all ' + L.MAX_LEVEL + ' levels!' : 'Level ' + g.level + ' cleared',
       '+' + gained + ' points · ' + Math.ceil(g.timeLeft) + 's left' + wordsLine(),
       done ? 'Play again' : 'Next level', function () { startLevel(done ? 1 : next); });
   }
