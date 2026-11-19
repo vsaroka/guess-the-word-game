@@ -74,7 +74,7 @@
       pick = L.pickWords(V.ENTRIES.length, level, null, guessedIdx());
     }
     var p = pick.params;
-    g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0, fresh: 0,
+    g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0, fresh: 0, wrong: {},
           fillers: {}, sel: null, selR: null, timeLeft: p.time, over: false };
     (pick.fillers || []).forEach(function (i) { g.fillers[i] = true; }); // padding words in practice: not tracked
     $('title-native').textContent = V.LANGUAGES[save.native];
@@ -126,13 +126,30 @@
 
   // a pair can be picked in either order: the left word first, or its translation first
   function pick(side, idx, el) {
+    if (el.classList.contains('bad')) return; // already tried against the selected word
+    pickRaw(side, idx, el);
+    if (g) refreshBad();
+  }
+  /** Words already tried (wrongly) against the currently selected word are marked red and cannot be picked. */
+  function refreshBad() {
+    var list = document.querySelectorAll('li button');
+    for (var i = 0; i < list.length; i++) {
+      var b = list[i], idx = +b.dataset.idx, bad = false;
+      if (b.dataset.side === 'R' && g.sel != null) bad = !!g.wrong[g.sel + ':' + idx];
+      if (b.dataset.side === 'L' && g.selR != null) bad = !!g.wrong[idx + ':' + g.selR];
+      b.classList.toggle('bad', bad && !g.matched[idx]);
+    }
+  }
+  function pickRaw(side, idx, el) {
     if (!g || g.over || g.matched[idx]) return;
     if (side === 'L') {
       if (g.selR != null) { attempt(idx, g.selR, el); return; }
+      if (g.sel === idx) { el.classList.remove('sel'); g.sel = null; return; } // tap again to unselect
       if (g.sel != null) btn('L', g.sel).classList.remove('sel');
       g.sel = idx; el.classList.add('sel'); return;
     }
     if (g.sel != null) { attempt(g.sel, idx, el); return; }
+    if (g.selR === idx) { el.classList.remove('sel'); g.selR = null; return; } // tap again to unselect
     if (g.selR != null) btn('R', g.selR).classList.remove('sel');
     g.selR = idx; el.classList.add('sel');
   }
@@ -155,33 +172,27 @@
       if (next != null) setTimeout(function () {
         if (g !== round || round.over) return;
         leftSlot.replaceChildren(makeButton(next, save.native, 'L'));
-        rightSlot.replaceChildren(makeButton(next, save.target, 'R'));
+        // the new translation goes to a random row (swapping with a waiting word), never predictably next to its partner
+        var freshRight = makeButton(next, save.target, 'R');
+        var slots = [rightSlot];
+        Array.prototype.forEach.call($('list-target').children, function (li) {
+          var b = li.firstChild;
+          if (li !== rightSlot && b && !b.classList.contains('done') && !b.classList.contains('sel')) slots.push(li);
+        });
+        var target = slots[Math.floor(Math.random() * slots.length)];
+        if (target !== rightSlot) rightSlot.replaceChildren(target.firstChild);
+        target.replaceChildren(freshRight);
+        refreshBad();
       }, PAIR_FLASH_MS);
-      // only one word left: it is resolved automatically (no guess needed)
-      if (Object.keys(g.matched).length === g.left.length - 1) {
-        setTimeout(function () { autoResolve(round); }, (next != null ? PAIR_FLASH_MS : 0) + 400);
-      }
     } else {
       // wrong pair: it counts as a miss for the left word, whichever column was clicked first
       if (!g.fillers[leftIdx]) { s.misses++; wordStat(leftIdx).miss++; addFailed(leftIdx); g.missed[leftIdx] = true; }
+      g.wrong[leftIdx + ':' + rightIdx] = true;
       g.timeLeft = Math.max(0, g.timeLeft - g.p.penalty);
       el.classList.add('wrong'); setTimeout(function () { el.classList.remove('wrong'); }, 320);
       persist(); hud();
       if (g.timeLeft <= 0) lose();
     }
-  }
-
-  /** Matches the last open word for the player. Not counted as a guess in statistics or practice. */
-  function autoResolve(round) {
-    if (g !== round || round.over) return;
-    var last = round.left.filter(function (i) { return !round.matched[i]; })[0];
-    if (last == null) return;
-    var lb = btn('L', last), rb = btn('R', last);
-    if (!lb || !rb) return;
-    round.matched[last] = true; round.sel = null; round.selR = null;
-    [lb, rb].forEach(function (b) { b.classList.remove('sel'); b.classList.add('done'); b.disabled = true; });
-    if (round.mode === 'level') round.gained += 10;
-    hud(); win();
   }
 
   function tick() {
@@ -251,6 +262,7 @@
   function overlay(title, text, primary, onPrimary) {
     $('ov-title').textContent = title; $('ov-text').textContent = text;
     $('ov-primary').textContent = primary; $('ov-primary').onclick = onPrimary;
+    $('ov-secondary').classList.toggle('hidden', primary === 'Menu'); // no duplicate Menu button
     $('overlay').classList.remove('hidden');
   }
   function hideOverlay() { $('overlay').classList.add('hidden'); }
