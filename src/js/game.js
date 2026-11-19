@@ -284,6 +284,8 @@
     s.attempts++; s.wins++;
     var lv = s.levels[g.level] || (s.levels[g.level] = { wins: 0, losses: 0, best: 0 });
     lv.wins++; lv.best = Math.max(lv.best, gained);
+    var used = Math.max(0.1, g.p.time - g.timeLeft); // seconds spent, wrong-pick penalties included
+    if (!lv.fast || used < lv.fast) { lv.fast = Math.round(used * 10) / 10; lv.words = g.p.pairs; }
     persist();
     var done = g.level >= L.MAX_LEVEL;
     overlay(done ? 'You finished all ' + L.MAX_LEVEL + ' levels!' : 'Level ' + g.level + ' cleared',
@@ -325,6 +327,11 @@
   function showStats() {
     var s = stats();
     var levelsCleared = Object.keys(s.levels).filter(function (k) { return s.levels[k].wins > 0; }).length;
+    // fastest rounds: seconds per word, best first (level wins recorded since this feature existed)
+    var fast = Object.keys(s.levels).filter(function (k) { return s.levels[k].fast; }).map(function (k) {
+      var lv = s.levels[k];
+      return { level: +k, time: lv.fast, words: lv.words, pace: lv.fast / lv.words };
+    }).sort(function (a, b) { return a.pace - b.pace; });
     var tiles = [
       ['Highest level reached', unlocked()],
       ['Levels cleared', levelsCleared + ' / ' + L.MAX_LEVEL],
@@ -335,6 +342,8 @@
       ['Total score', save.score],
       ['Words guessed', guessedIdx().length + ' / ' + V.ENTRIES.length],
       ['Words left to learn', V.ENTRIES.length - guessedIdx().length],
+      ['Fastest pace', fast.length ? fast[0].pace.toFixed(1) + ' s / word' : '–'],
+      ['Fastest round', fast.length ? fast[0].time + ' s · ' + fast[0].words + ' words' : '–'],
       ['Failed words to practice', failedIdx().length]
     ];
     var box = $('stats-tiles'); box.innerHTML = '';
@@ -348,6 +357,17 @@
     $('stats-pair').textContent = V.LANGUAGES[save.native] + ' → ' + V.LANGUAGES[save.target];
     var hard = Object.keys(s.words).filter(function (k) { return s.words[k].miss > 0 && byId[k] != null; })
       .sort(function (a, b) { return s.words[b].miss - s.words[a].miss; }).slice(0, 10);
+    var ft = $('stats-fast'); ft.innerHTML = '';
+    if (!fast.length) {
+      var fr0 = document.createElement('tr'), fd0 = document.createElement('td');
+      fd0.colSpan = 4; fd0.textContent = 'Clear a level to see your fastest rounds.'; fr0.appendChild(fd0); ft.appendChild(fr0);
+    }
+    fast.slice(0, 5).forEach(function (r) {
+      var tr = document.createElement('tr');
+      ['Level ' + r.level, r.words + ' words', r.time + ' s', r.pace.toFixed(1) + ' s / word']
+        .forEach(function (txt) { var td = document.createElement('td'); td.textContent = txt; tr.appendChild(td); });
+      ft.appendChild(tr);
+    });
     var tb = $('stats-hard'); tb.innerHTML = '';
     if (!hard.length) {
       var tr0 = document.createElement('tr'), td0 = document.createElement('td');
@@ -366,12 +386,25 @@
 
   function init() {
     fillSelect($('sel-native'), save.native); fillSelect($('sel-target'), save.target);
+    // the same language can never be chosen on both sides: it is greyed out in the other list
+    function lockSame() {
+      [['sel-native', 'sel-target'], ['sel-target', 'sel-native']].forEach(function (p) {
+        var other = $(p[1]).value;
+        Array.prototype.forEach.call($(p[0]).options, function (o) { o.disabled = o.value === other; });
+      });
+    }
+    if (save.native === save.target) { // repair an invalid saved pair
+      save.target = Object.keys(V.LANGUAGES).filter(function (c) { return c !== save.native; })[0];
+      fillSelect($('sel-target'), save.target);
+    }
     function changed() {
       save.native = $('sel-native').value; save.target = $('sel-target').value;
+      lockSame();
       var same = save.native === save.target;
       $('btn-start').disabled = same; $('btn-stats').disabled = same;
       persist(); refreshStart();
     }
+    lockSame();
     $('sel-native').onchange = $('sel-target').onchange = changed;
     $('btn-start').onclick = function () { startLevel(unlocked()); };
     $('btn-practice').onclick = function () { startRound('practice'); };

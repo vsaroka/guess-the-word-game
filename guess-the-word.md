@@ -14,9 +14,9 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 
 ## Languages
 
-- Seven languages: German (`de`), French (`fr`), English (`en`), Spanish (`es`), Russian (`ru`), Italian (`it`), Bavarian (`bar`, shown as "Bairisch"). Bavarian has no fixed spelling; the words are a common phonetic spelling and may differ by region.
-- The player picks the language they speak and the language they want to learn. Any combination works except identical languages (Start is disabled).
-- 535 vocabulary entries (common nouns, verbs, adjectives, colours, numbers, weekdays and some abstract words), ordered from easy to hard. Every entry has all seven languages.
+- Eleven languages: German (`de`), French (`fr`), English (`en`), Spanish (`es`), Russian (`ru`), Italian (`it`), Bavarian (`bar`, shown as "Bairisch"), Dutch (`nl`), Polish (`pl`), Belarusian (`be`) and Ukrainian (`uk`). Bavarian has no fixed spelling; the words are a common phonetic spelling and may differ by region.
+- The player picks the language they speak and the language they want to learn. The language chosen on one side is greyed out in the other list, so the same language can never be selected twice.
+- 535 vocabulary entries (common nouns, verbs, adjectives, colours, numbers, weekdays and some abstract words), ordered from easy to hard. Every entry has all eleven languages.
 
 ## Levels and difficulty
 
@@ -46,6 +46,7 @@ Per language pair, opened with "Statistics" on the start screen:
 - highest level reached, levels cleared (of 150), level attempts, win rate
 - match accuracy (correct matches against mistakes), practice rounds cleared, total score
 - words guessed (of all words) and words left to learn
+- fastest pace and fastest round: seconds per word compared with the number of words in the level, plus a table of the 5 fastest rounds (time used includes wrong-pick penalties; only levels cleared since this feature was added are recorded)
 - number of failed words waiting for practice
 - the 10 hardest words with their miss counts
 - "Reset statistics" clears the statistics and the failed list for the pair (with a confirmation).
