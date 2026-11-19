@@ -4,10 +4,9 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 
 ## Gameplay
 
-- **Two-panel matching.** The left panel lists words in the language the player knows. The right panel lists shuffled translations in the language being learned. The player taps a word in either column and then its partner in the other column, so the pair can be picked left-first or right-first. Tapping another word in the same column changes the selection.
-- **Correct match.** Both entries turn green and are locked. They stay visible for 0.5 seconds before the next pair takes their place.
-- **Wrong match.** The second tapped entry shakes and the timer loses 3 seconds. The miss is recorded for the left word. The first selection stays.
-- **Last word resolves itself.** When only one word is left, it is matched automatically after a short delay. It scores the normal 10 points but is not counted in statistics, and in practice mode it does not leave the failed list.
+- **Two-panel matching.** The left panel lists words in the language the player knows. The right panel lists shuffled translations in the language being learned. The player taps a word in either column and then its partner in the other column, so the pair can be picked left-first or right-first. Tapping another word in the same column changes the selection, and tapping the selected word again unselects it.
+- **Correct match.** Both entries turn green and are locked. They stay visible for 0.5 seconds before the next pair takes their place.  The new left word takes the freed left row; its translation appears in a random row of the right column (swapping places with a waiting word), so it never lines up predictably with its partner.
+- **Wrong match.** The second tapped entry shakes and the timer loses 3 seconds. It then stays red and cannot be tapped again while the same word is selected (it becomes available again for other words). The miss is recorded for the left word. The first selection stays.
 - **Level cleared** when every pair is matched. The result overlay shows points, time left, new words learned in this level and the learned total (for example "5 new words · 8/119 learned"), and offers "Next level".
 - **Level failed** when the timer reaches 0. The overlay offers "Retry" for the same level.
 - **Finish.** Clearing level 150 shows a completion message with "Play again", which restarts from level 1.
