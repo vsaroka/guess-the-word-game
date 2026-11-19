@@ -69,3 +69,4 @@ table.hard td:last-child { text-align: right; color: var(--bad); }
 .quiz-options button { width: 100%; min-height: 58px; font-size: 22px; border-radius: 14px; border-width: 2px; }
 .quiz-options button.bad { background: var(--bad); color: #fff; border-color: var(--bad); opacity: .55; cursor: not-allowed; }
 .quiz-options button.done { background: var(--ok); color: #fff; border-color: var(--ok); }
+table.fast td:last-child { color: var(--ok); }
