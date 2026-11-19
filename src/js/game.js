@@ -68,19 +68,27 @@
     stopTimer();
     var pick;
     if (mode === 'practice') {
-      pick = L.practiceRound(failedIdx(), V.ENTRIES.length);
+      pick = L.quizRound(failedIdx(), V.ENTRIES.length);
       if (!pick.pairs.length) { toMenu(); return; }
     } else {
       pick = L.pickWords(V.ENTRIES.length, level, null, guessedIdx());
     }
     var p = pick.params;
     g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0, fresh: 0, wrong: {},
-          fillers: {}, sel: null, selR: null, timeLeft: p.time, over: false };
-    (pick.fillers || []).forEach(function (i) { g.fillers[i] = true; }); // padding words in practice: not tracked
+          sel: null, selR: null, timeLeft: p.time, over: false, options: pick.options, qi: 0, busy: false };
     $('title-native').textContent = V.LANGUAGES[save.native];
     $('title-target').textContent = V.LANGUAGES[save.target];
     hideOverlay();
     show('screen-game');
+    $('panels').classList.toggle('hidden', mode === 'practice');
+    $('quiz').classList.toggle('hidden', mode !== 'practice');
+    if (mode === 'practice') {
+      showQuestion();
+      g.timer = setInterval(tick, 250);
+      g.last = Date.now();
+      hud();
+      return;
+    }
     // only as many words as fit on screen are shown; the rest follow as pairs are matched
     var first = g.queue.splice(0, visibleSlots(p.pairs));
     render(first, L.shuffle(first));
@@ -88,6 +96,47 @@
     g.last = Date.now();
     hud();
   }
+  /* ---------- practice quiz: one word on top, five answers below ---------- */
+
+  function showQuestion() {
+    var idx = g.left[g.qi], box = $('quiz-options');
+    $('quiz-count').textContent = 'Word ' + (g.qi + 1) + ' / ' + g.left.length;
+    $('quiz-prompt').textContent = 'Choose the translation (' + V.LANGUAGES[save.target] + ')';
+    $('quiz-word').textContent = word(idx, save.native);
+    box.innerHTML = '';
+    g.options[g.qi].forEach(function (o) {
+      var b = document.createElement('button');
+      b.textContent = word(o, save.target);
+      b.addEventListener('click', function () { answer(o, b); });
+      box.appendChild(b);
+    });
+    g.busy = false;
+  }
+
+  function answer(opt, el) {
+    if (!g || g.over || g.busy || el.classList.contains('bad')) return;
+    var idx = g.left[g.qi], s = stats();
+    if (opt === idx) {
+      g.busy = true; el.classList.add('done');
+      s.matches++; if (!isGuessed(idx)) g.fresh++; wordStat(idx).ok++;
+      if (!g.missed[idx]) removeFailed(idx); // answered without a mistake
+      persist(); hud();
+      var round = g;
+      setTimeout(function () {
+        if (g !== round || round.over) return;
+        round.qi++;
+        if (round.qi >= round.left.length) win(); else showQuestion();
+      }, PAIR_FLASH_MS);
+    } else {
+      // wrong answer: stays red and cannot be chosen again for this word
+      s.misses++; wordStat(idx).miss++; addFailed(idx); g.missed[idx] = true;
+      el.classList.add('bad');
+      g.timeLeft = Math.max(0, g.timeLeft - g.p.penalty);
+      persist(); hud();
+      if (g.timeLeft <= 0) lose();
+    }
+  }
+
   function startLevel(level) { startRound('level', level); }
 
   /** How many rows fit between the top of the lists and the bottom of the screen (no scrolling). */
@@ -186,7 +235,7 @@
       }, PAIR_FLASH_MS);
     } else {
       // wrong pair: it counts as a miss for the left word, whichever column was clicked first
-      if (!g.fillers[leftIdx]) { s.misses++; wordStat(leftIdx).miss++; addFailed(leftIdx); g.missed[leftIdx] = true; }
+      s.misses++; wordStat(leftIdx).miss++; addFailed(leftIdx); g.missed[leftIdx] = true;
       g.wrong[leftIdx + ':' + rightIdx] = true;
       g.timeLeft = Math.max(0, g.timeLeft - g.p.penalty);
       el.classList.add('wrong'); setTimeout(function () { el.classList.remove('wrong'); }, 320);

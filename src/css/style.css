@@ -58,3 +58,14 @@ body.playing .panels { margin-top: 8px; }
 table.hard { width: 100%; border-collapse: collapse; text-align: left; }
 table.hard td { padding: 6px 4px; border-bottom: 1px solid var(--line); }
 table.hard td:last-child { text-align: right; color: var(--bad); }
+
+/* practice quiz: one word on top, five answers below */
+.quiz { margin-top: 12px; }
+.quiz-count { color: var(--muted); font-size: 14px; margin: 0 0 4px; }
+.quiz-prompt { font-size: 22px; font-weight: 700; margin: 0 0 12px; }
+.quiz-word { font-size: 28px; font-weight: 700; padding: 18px 16px; margin-bottom: 16px; text-align: left;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow-wrap: anywhere; }
+.quiz-options { display: grid; gap: 10px; }
+.quiz-options button { width: 100%; min-height: 58px; font-size: 22px; border-radius: 14px; border-width: 2px; }
+.quiz-options button.bad { background: var(--bad); color: #fff; border-color: var(--bad); opacity: .55; cursor: not-allowed; }
+.quiz-options button.done { background: var(--ok); color: #fff; border-color: var(--ok); }

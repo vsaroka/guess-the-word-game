@@ -9,7 +9,7 @@
   var BASE_PAIRS = 2;            // level 1 has BASE_PAIRS + PAIRS_PER_LEVEL = 4 words
   var MAX_PAIRS = 30;            // cap so the lists stay playable on a phone
   var PRACTICE_MAX_PAIRS = 8;
-  var PRACTICE_MIN_PAIRS = 4;    // short failed lists are padded with filler words
+  var QUIZ_OPTIONS = 5;          // answers offered per practice question
   var PRACTICE_SECONDS_PER_PAIR = 8;
 
   function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
@@ -74,22 +74,20 @@
   }
 
   /**
-   * Practice round built from previously failed vocabulary indexes (no level, no score).
-   * Takes up to 8 failed words; if fewer than 4, random filler words pad the round so both
-   * panels stay equal in size and the round is not trivial. Fillers are listed separately.
+   * Practice quiz built from previously failed vocabulary indexes (no level, no score).
+   * Takes up to 8 failed words. Each question shows one word and QUIZ_OPTIONS translations:
+   * the right one plus random wrong ones, in random order. options[i] belongs to pairs[i].
    */
-  function practiceRound(failed, total, rng) {
+  function quizRound(failed, total, rng) {
     var words = shuffle(failed, rng).slice(0, PRACTICE_MAX_PAIRS);
-    var fillers = [];
-    if (words.length && words.length < PRACTICE_MIN_PAIRS) {
-      var rest = [];
-      for (var i = 0; i < total; i++) if (words.indexOf(i) < 0) rest.push(i);
-      fillers = shuffle(rest, rng).slice(0, PRACTICE_MIN_PAIRS - words.length);
-    }
-    var pairs = shuffle(words.concat(fillers), rng);
-    var p = { level: 0, pairs: pairs.length, distractors: 0,
-              time: pairs.length * PRACTICE_SECONDS_PER_PAIR, penalty: MISS_PENALTY };
-    return { params: p, pairs: pairs, distractors: [], fillers: fillers };
+    var options = words.map(function (w) {
+      var others = [];
+      for (var i = 0; i < total; i++) if (i !== w) others.push(i);
+      return shuffle([w].concat(shuffle(others, rng).slice(0, Math.min(QUIZ_OPTIONS, total) - 1)), rng);
+    });
+    var p = { level: 0, pairs: words.length, distractors: 0,
+              time: words.length * PRACTICE_SECONDS_PER_PAIR, penalty: MISS_PENALTY };
+    return { params: p, pairs: words, options: options };
   }
 
   function score(p, secondsLeft) {
@@ -97,5 +95,5 @@
   }
 
   return { MAX_LEVEL: MAX_LEVEL, MAX_PAIRS: MAX_PAIRS, params: params, poolSize: poolSize, pickWords: pickWords,
-           practiceRound: practiceRound, shuffle: shuffle, score: score };
+           quizRound: quizRound, shuffle: shuffle, score: score };
 });

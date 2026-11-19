@@ -26,18 +26,19 @@ test('both panels hold the same words and grow by two per level up to the cap', 
   assert.strictEqual(Levels.params(150).pairs, 30);
 });
 
-test('practice round uses the failed words, padded with fillers to at least 4', () => {
+test('practice quiz offers 5 options per failed word, the right one included', () => {
   const n = Vocab.ENTRIES.length;
   const failed = [3, 7];
-  const r = Levels.practiceRound(failed, n);
-  assert.strictEqual(r.pairs.length, 4);
-  assert.strictEqual(r.fillers.length, 2);
-  failed.forEach(f => assert.ok(r.pairs.includes(f)));
-  r.fillers.forEach(f => assert.ok(!failed.includes(f) && r.pairs.includes(f)));
-  assert.strictEqual(r.distractors.length, 0);
-  const many = Levels.practiceRound(Array.from({ length: 20 }, (_, i) => i), n);
+  const r = Levels.quizRound(failed, n);
+  assert.strictEqual(r.pairs.length, 2);
+  r.pairs.forEach((w, i) => {
+    assert.ok(failed.includes(w));
+    assert.strictEqual(r.options[i].length, 5);
+    assert.strictEqual(new Set(r.options[i]).size, 5);
+    assert.ok(r.options[i].includes(w));
+  });
+  const many = Levels.quizRound(Array.from({ length: 20 }, (_, i) => i), n);
   assert.strictEqual(many.pairs.length, 8);
-  assert.strictEqual(many.fillers.length, 0);
   assert.strictEqual(many.params.time, 8 * 8);
 });
 
