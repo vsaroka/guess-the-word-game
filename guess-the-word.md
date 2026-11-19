@@ -9,7 +9,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 - **Wrong match.** The second tapped entry shakes and the timer loses 3 seconds. It then stays red and cannot be tapped again while the same word is selected (it becomes available again for other words). The miss is recorded for the left word. The first selection stays.
 - **Level cleared** when every pair is matched. The result overlay shows points, time left, new words learned in this level and the learned total (for example "5 new words · 8/119 learned"), and offers "Next level".
 - **Level failed** when the timer reaches 0. The overlay offers "Retry" for the same level.
-- **Finish.** Clearing level 150 shows a completion message with "Play again", which restarts from level 1.
+- **Finish.** Clearing level 200 shows a completion message with "Play again", which restarts from level 1.
 - **Menu button** in the game bar and on the overlay returns to the start screen and stops the timer.
 
 ## Languages
@@ -20,30 +20,28 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 
 ## Levels and difficulty
 
-150 levels. Difficulty is computed in `src/js/levels.js`.
+200 levels. Difficulty is computed in `src/js/levels.js`.
 
-| Parameter | Level 1 | Level 150 |
-|---|---|---|
-| Words in each panel (same count on both sides, every word has a match) | 4 (two more every level) | 30 (capped from level 14) |
-| Time per pair | about 8.9 s | 2.4 s (3.2 s at level 100) |
-| Vocabulary pool | 20 easiest words | all words |
+| Parameter | Level 1 | Level 50 | Level 200 |
+|---|---|---|---|
+| Words in each panel (same count on both sides, every word has a match) | 4 (one more every two levels) | 28 | 30 (capped from level 54) |
+| Time per pair | about 9.9 s | 7 s | 3.2 s |
 
 - The level time is pairs multiplied by the time per pair.
-- Half of the pairs in each level come from the hardest 40% of the pool, so later levels feel harder.
-- Words are random each attempt and unique within a level. Words the player has not guessed yet are always picked first, so each level teaches as many new words as possible. If the normal pool has too few new words, it is extended toward harder words. Known words are only used once every word has been guessed or the new ones run out.
+- Words are random each attempt and unique within a level. New words come in vocabulary order (easy to hard), but only as many as the player's progress allows: about 40% of a level, minus one for every 4 words that are still failing (at least 1). The rest of the level repeats known words, words with open failures first. If there are too few known words, new ones fill the gap.
 
 ## Practice mode (retry failed words)
 
-- A word is added to the failed list when the player picks a wrong translation for it. Words still open at timeout are not counted as mistakes.
-- "Practice failed words (N)" on the start screen starts a quiz with up to 8 of the failed words, 8 seconds per word, one word at a time. The word in the known language is shown on top and five possible translations (the right one and four random others) are listed below. A wrong answer turns red, cannot be chosen again for that word, and costs 3 seconds. The right answer turns green and the next word follows after 0.5 seconds.
-- A word leaves the list when it is answered without a mistake in practice mode.
+- Every wrong pick adds one failure to that word (maximum 5), in levels and in practice. A word solved only after a wrong pick therefore still counts as failed. Words still open at timeout are not counted.
+- "Practice failed words (N)" on the start screen starts a quiz with up to 10 questions; a word is asked once per outstanding failure, 8 seconds per word, one word at a time. The word in the known language is shown on top and five possible translations (the right one and four random others) are listed below. A wrong answer turns red, cannot be chosen again for that word, and costs 3 seconds. The right answer turns green and the next word follows after 0.5 seconds.
+- Each answer given right at the first try in practice mode removes one failure of that word.
 - Practice rounds do not change level progress or score. Retry and "Practice again" are offered until the list is empty.
 - The failed list is kept per language pair.
 
 ## Statistics
 
 Per language pair, opened with "Statistics" on the start screen:
-- highest level reached, levels cleared (of 150), level attempts, win rate
+- highest level reached, levels cleared (of 200), level attempts, win rate
 - match accuracy (correct matches against mistakes), practice rounds cleared, total score
 - words guessed (of all words) and words left to learn
 - fastest pace and fastest round: seconds per word compared with the number of words in the level, plus a table of the 5 fastest rounds (time used includes wrong-pick penalties; only levels cleared since this feature was added are recorded)

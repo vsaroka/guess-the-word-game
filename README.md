@@ -38,22 +38,22 @@ Run `npm run stamp` before installing or publishing: it writes `src/js/version.j
 
 ## Rules
 
-- 150 levels per language pair; progress and score are stored in `localStorage`.
+- 200 levels per language pair; progress and score are stored in `localStorage`.
 - A wrong match costs 3 seconds. Running out of time means retrying the level.
 - Score per level: 10 per pair + 2 per second left.
 
 ## Practice and statistics
 
-- Words you match wrongly go to a failed list. "Practice failed words" replays them (up to 8 words, padded to at least 4 with filler words) until you get them right.
+- Every wrong match adds one failure to that word (max 5). "Practice failed words" asks the word once per failure (up to 10 questions); each answer right at the first try removes one failure.
 - "Statistics" shows level progress, win rate, match accuracy and your hardest words per language pair.
 
 ## Difficulty curve (`src/js/levels.js`)
 
-| Knob | Level 1 | Level 150 |
-|---|---|---|
-| Words in each panel (same on both sides) | 4 (+2 per level) | 30 (capped from level 14) |
-| Time per pair | ~8.9 s | ~3.2 s |
-| Vocabulary pool (easy → hard) | 20 words | all words, half drawn from the hardest 40% |
+| Knob | Level 1 | Level 50 | Level 200 |
+|---|---|---|---|
+| Words in each panel | 4 (+1 every 2 levels) | 28 | 30 (cap from level 54) |
+| Time per pair | ~9.9 s | ~7 s | ~3.2 s |
+| New words per level | depends on progress (about 40% of the level, fewer while many words are failing) | | |
 
 ## Layout
 

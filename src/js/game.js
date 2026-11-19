@@ -30,14 +30,23 @@
   function wordStat(idx) { var w = stats().words; return w[id(idx)] || (w[id(idx)] = { ok: 0, miss: 0 }); }
   function isGuessed(idx) { var w = stats().words[id(idx)]; return !!(w && w.ok > 0); }
   function guessedIdx() { var r = []; for (var i = 0; i < V.ENTRIES.length; i++) if (isGuessed(i)) r.push(i); return r; }
-  function failedIdx() { return (save.failed[key()] || []).map(function (i) { return byId[i]; }).filter(function (i) { return i != null; }); }
-  function addFailed(idx) {
-    var list = save.failed[key()] || (save.failed[key()] = []);
-    if (list.indexOf(id(idx)) < 0) list.push(id(idx));
+  /** Failure counts per word id. Older saves stored a plain list of ids (one failure each). */
+  function failedMap() {
+    var f = save.failed[key()];
+    if (Array.isArray(f)) { var m = {}; f.forEach(function (i) { m[i] = 1; }); f = m; }
+    return save.failed[key()] = f || {};
   }
+  /** Word indexes to practice, repeated once per outstanding failure. */
+  function failedIdx() {
+    var f = failedMap(), r = [];
+    Object.keys(f).forEach(function (k) { if (byId[k] != null) for (var n = 0; n < f[k]; n++) r.push(byId[k]); });
+    return r;
+  }
+  function weakIdx() { var f = failedMap(); return Object.keys(f).filter(function (k) { return byId[k] != null && f[k] > 0; }).map(function (k) { return byId[k]; }); }
+  function addFailed(idx) { var f = failedMap(); f[id(idx)] = Math.min(5, (f[id(idx)] || 0) + 1); }
   function removeFailed(idx) {
-    var list = save.failed[key()] || [];
-    var at = list.indexOf(id(idx)); if (at >= 0) list.splice(at, 1);
+    var f = failedMap(), k = id(idx);
+    if (f[k] > 1) f[k]--; else delete f[k];
   }
 
   function fillSelect(sel, value) {
@@ -71,7 +80,7 @@
       pick = L.quizRound(failedIdx(), V.ENTRIES.length);
       if (!pick.pairs.length) { toMenu(); return; }
     } else {
-      pick = L.pickWords(V.ENTRIES.length, level, null, guessedIdx());
+      pick = L.pickWords(V.ENTRIES.length, level, null, guessedIdx(), weakIdx());
     }
     var p = pick.params;
     g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0, fresh: 0, wrong: {},
@@ -110,7 +119,7 @@
       b.addEventListener('click', function () { answer(o, b); });
       box.appendChild(b);
     });
-    g.busy = false;
+    g.busy = false; g.qmiss = false;
   }
 
   function answer(opt, el) {
@@ -119,7 +128,7 @@
     if (opt === idx) {
       g.busy = true; el.classList.add('done');
       s.matches++; if (!isGuessed(idx)) g.fresh++; wordStat(idx).ok++;
-      if (!g.missed[idx]) removeFailed(idx); // answered without a mistake
+      if (!g.qmiss) removeFailed(idx); // answered at the first try: one failure paid off
       persist(); hud();
       var round = g;
       setTimeout(function () {
@@ -129,7 +138,7 @@
       }, PAIR_FLASH_MS);
     } else {
       // wrong answer: stays red and cannot be chosen again for this word
-      s.misses++; wordStat(idx).miss++; addFailed(idx); g.missed[idx] = true;
+      s.misses++; wordStat(idx).miss++; addFailed(idx); g.missed[idx] = true; g.qmiss = true;
       el.classList.add('bad');
       g.timeLeft = Math.max(0, g.timeLeft - g.p.penalty);
       persist(); hud();
