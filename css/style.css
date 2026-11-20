@@ -33,6 +33,7 @@ ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 li button { width: 100%; text-align: left; font-size: 22px; min-height: 60px; padding: 14px 16px; }
 li button.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
 li button.done { background: var(--ok); color: #fff; border-color: var(--ok); cursor: default; opacity: .85; }
+li button.forfeit { border: 3px solid var(--bad); }
 li button.bad { background: var(--bad); color: #fff; border-color: var(--bad); opacity: .55; cursor: not-allowed; }
 li button.wrong { animation: shake .3s; border-color: var(--bad); }
 @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
