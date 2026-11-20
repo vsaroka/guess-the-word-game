@@ -84,7 +84,7 @@
     }
     var p = pick.params;
     g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0, fresh: 0, wrong: {},
-          sel: null, selR: null, timeLeft: p.time, over: false, options: pick.options, qi: 0, busy: false };
+          strikes: {}, forfeits: 0, sel: null, selR: null, timeLeft: p.time, over: false, options: pick.options, qi: 0, busy: false };
     $('title-native').textContent = V.LANGUAGES[save.native];
     $('title-target').textContent = V.LANGUAGES[save.target];
     hideOverlay();
@@ -145,6 +145,8 @@
       if (g.timeLeft <= 0) lose();
     }
   }
+
+  var MAX_STRIKES = 3, MAX_FORFEITS = 3; // wrong picks per word / given-away words that lose the level
 
   function startLevel(level) { startRound('level', level); }
 
@@ -249,8 +251,22 @@
       g.timeLeft = Math.max(0, g.timeLeft - g.p.penalty);
       el.classList.add('wrong'); setTimeout(function () { el.classList.remove('wrong'); }, 320);
       persist(); hud();
-      if (g.timeLeft <= 0) lose();
+      if (g.timeLeft <= 0) { lose(); return; }
+      // three wrong picks for one word: it is solved for the player, stays red on screen and costs a life
+      g.strikes[leftIdx] = (g.strikes[leftIdx] || 0) + 1;
+      if (g.strikes[leftIdx] >= MAX_STRIKES) forfeit(leftIdx);
     }
+  }
+
+  function forfeit(idx) {
+    g.matched[idx] = true; g.forfeits++;
+    [btn('L', idx), btn('R', idx)].forEach(function (b) {
+      b.classList.remove('sel', 'bad', 'wrong'); b.classList.add('done', 'forfeit'); b.disabled = true;
+    });
+    g.sel = null; g.selR = null;
+    refreshBad(); hud();
+    if (g.forfeits >= MAX_FORFEITS) { lose('Too many mistakes', MAX_FORFEITS + ' words given away on level ' + g.level + '.'); return; }
+    if (Object.keys(g.matched).length === g.left.length) win();
   }
 
   function tick() {
@@ -268,7 +284,7 @@
   });
 
   function hud() {
-    $('hud-label').textContent = g.mode === 'practice' ? 'Practice' : 'Level ' + g.level + ' / ' + L.MAX_LEVEL;
+    $('hud-label').textContent = g.mode === 'practice' ? 'Practice' : 'Level ' + g.level + ' / ' + L.MAX_LEVEL + (g.forfeits ? ' · ✖' + g.forfeits + '/' + MAX_FORFEITS : '');
     $('hud-score').textContent = save.score + g.gained;
     $('hud-time').textContent = Math.ceil(g.timeLeft);
     var f = $('bar-fill'); f.style.width = (100 * g.timeLeft / g.p.time) + '%';
@@ -286,7 +302,7 @@
         left ? 'Practice again' : 'Menu', left ? function () { startRound('practice'); } : toMenu);
       return;
     }
-    var gained = L.score(g.p, g.timeLeft);
+    var gained = L.score({ pairs: g.p.pairs - g.forfeits }, g.timeLeft);
     save.score += gained;
     var next = Math.min(L.MAX_LEVEL, g.level + 1);
     if (g.level >= unlocked()) save.best[key()] = next;
@@ -294,7 +310,7 @@
     var lv = s.levels[g.level] || (s.levels[g.level] = { wins: 0, losses: 0, best: 0 });
     lv.wins++; lv.best = Math.max(lv.best, gained);
     var used = Math.max(0.1, g.p.time - g.timeLeft); // seconds spent, wrong-pick penalties included
-    if (!lv.fast || used < lv.fast) { lv.fast = Math.round(used * 10) / 10; lv.words = g.p.pairs; }
+    if (!g.forfeits && (!lv.fast || used < lv.fast)) { lv.fast = Math.round(used * 10) / 10; lv.words = g.p.pairs; }
     persist();
     var done = g.level >= L.MAX_LEVEL;
     overlay(done ? 'You finished all ' + L.MAX_LEVEL + ' levels!' : 'Level ' + g.level + ' cleared',
@@ -305,7 +321,7 @@
     var n = guessedIdx().length, t = V.ENTRIES.length;
     return ' · ' + g.fresh + ' new word' + (g.fresh === 1 ? '' : 's') + ' · ' + n + '/' + t + ' learned';
   }
-  function lose() {
+  function lose(title, text) {
     g.over = true; stopTimer();
     var s = stats();
     // only wrong picks count as misses; words left open at timeout are not recorded as mistakes
@@ -316,7 +332,7 @@
     }
     persist();
     var retry = g.mode === 'practice' ? function () { startRound('practice'); } : function () { startLevel(g.level); };
-    overlay('Time is up', g.mode === 'practice' ? 'Practice round not finished.' : 'Level ' + g.level + ' not solved.', 'Retry', retry);
+    overlay(title || 'Time is up', text || (g.mode === 'practice' ? 'Practice round not finished.' : 'Level ' + g.level + ' not solved.'), 'Retry', retry);
   }
 
   function overlay(title, text, primary, onPrimary) {

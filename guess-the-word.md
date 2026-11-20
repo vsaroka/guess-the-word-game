@@ -8,6 +8,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 - **Correct match.** Both entries turn green and are locked. They stay visible for 0.5 seconds before the next pair takes their place.  The new left word takes the freed left row; its translation appears in a random row of the right column (swapping places with a waiting word), so it never lines up predictably with its partner.
 - **Wrong match.** The second tapped entry shakes and the timer loses 3 seconds. It then stays red and cannot be tapped again while the same word is selected (it becomes available again for other words). The miss is recorded for the left word. The first selection stays.
 - **Level cleared** when every pair is matched. The result overlay shows points, time left, new words learned in this level and the learned total (for example "5 new words · 8/119 learned"), and offers "Next level".
+- **Three wrong picks for one word** solve it automatically: the pair turns green with a red border and stays on screen, no points are given, and the 3-second penalty applies as for any wrong pick. The header shows ✖1/3. The third such word loses the level ("Too many mistakes"). Fastest-round statistics ignore levels with given-away words.
 - **Level failed** when the timer reaches 0. The overlay offers "Retry" for the same level.
 - **Finish.** Clearing level 200 shows a completion message with "Play again", which restarts from level 1.
 - **Menu button** in the game bar and on the overlay returns to the start screen and stops the timer.
