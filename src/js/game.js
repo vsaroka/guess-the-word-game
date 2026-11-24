@@ -1,10 +1,10 @@
 (function () {
-  var V = window.Vocab, L = window.Levels;
+  var V = window.Vocab, L = window.Levels, P = window.Pictos;
   var $ = function (id) { return document.getElementById(id); };
   var STORE = 'guess-the-word-v1';
   var PAIR_FLASH_MS = 500; // a matched pair stays visible (green) this long before it is replaced
 
-  function defaults() { return { native: 'de', target: 'fr', best: {}, score: 0, failed: {}, stats: {} }; }
+  function defaults() { return { native: 'de', target: 'fr', best: {}, score: 0, failed: {}, stats: {}, picto: true }; }
   function load() {
     try { return Object.assign(defaults(), JSON.parse(localStorage.getItem(STORE))); }
     catch (e) { return defaults(); }
@@ -71,6 +71,14 @@
 
   function word(idx, lang) { return V.ENTRIES[idx][lang]; }
 
+  /** Sets a button's label: the word, with its pictogram in front when the word is in the learned language. */
+  function setLabel(b, idx, lang) {
+    b.textContent = '';
+    var pic = save.picto !== false && lang === save.target ? P.forWord(id(idx)) : '';
+    if (pic) { var i = document.createElement('span'); i.className = 'picto'; i.setAttribute('aria-hidden', 'true'); i.textContent = pic; b.appendChild(i); }
+    b.appendChild(document.createTextNode(word(idx, lang)));
+  }
+
   /* ---------- rounds ---------- */
 
   function startRound(mode, level) {
@@ -115,7 +123,7 @@
     box.innerHTML = '';
     g.options[g.qi].forEach(function (o) {
       var b = document.createElement('button');
-      b.textContent = word(o, save.target);
+      setLabel(b, o, save.target);
       b.addEventListener('click', function () { answer(o, b); });
       box.appendChild(b);
     });
@@ -177,7 +185,7 @@
   }
   function makeButton(idx, lang, side) {
     var b = document.createElement('button');
-    b.textContent = word(idx, lang); b.dataset.idx = idx; b.dataset.side = side;
+    setLabel(b, idx, lang); b.dataset.idx = idx; b.dataset.side = side;
     b.addEventListener('click', function () { pick(side, idx, b); });
     return b;
   }
@@ -431,6 +439,8 @@
     }
     lockSame();
     $('sel-native').onchange = $('sel-target').onchange = changed;
+    $('chk-picto').checked = save.picto !== false;
+    $('chk-picto').onchange = function () { save.picto = $('chk-picto').checked; persist(); };
     $('btn-start').onclick = function () { startLevel(unlocked()); };
     $('btn-practice').onclick = function () { startRound('practice'); };
     $('btn-stats').onclick = showStats;

@@ -19,6 +19,11 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 - The player picks the language they speak and the language they want to learn. The language chosen on one side is greyed out in the other list, so the same language can never be selected twice.
 - 535 vocabulary entries (common nouns, verbs, adjectives, colours, numbers, weekdays and some abstract words), ordered from easy to hard. Every entry has all eleven languages.
 
+## Pictograms
+
+- Words in the right-hand panel (the language being learned) and the answers in practice mode show a small emoji pictogram in front of the word, for example ☁️ for "cloud". About 440 of the 535 words have one; abstract words show none. Emoji are looked up by the English word in `src/js/pictos.js`, so no images are needed and they work offline.
+- A checkbox on the start screen turns pictograms off (saved with the progress).
+
 ## Levels and difficulty
 
 200 levels. Difficulty is computed in `src/js/levels.js`.

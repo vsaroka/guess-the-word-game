@@ -1,9 +1,9 @@
 /* Offline cache. Bump CACHE when any cached file changes. */
-var CACHE = 'guess-the-word-v20';
+var CACHE = 'guess-the-word-v21';
 var FILES = [
   './', './index.html', './manifest.webmanifest',
   './css/style.css',
-  './js/version.js', './js/vocab.js', './js/levels.js', './js/game.js',
+  './js/version.js', './js/vocab.js', './js/pictos.js', './js/levels.js', './js/game.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'
 ];
 

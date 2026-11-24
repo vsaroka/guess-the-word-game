@@ -99,3 +99,10 @@ test('there are at least 500 words and 200 levels', () => {
   assert.ok(Vocab.ENTRIES.length >= 500, 'words: ' + Vocab.ENTRIES.length);
   assert.strictEqual(Levels.MAX_LEVEL, 200);
 });
+
+test('pictograms refer to existing words and cover most of the vocabulary', () => {
+  const Pictos = require('../src/js/pictos.js');
+  const ids = new Set(Vocab.ENTRIES.map(e => e.en));
+  Object.keys(Pictos.MAP).forEach(k => assert.ok(ids.has(k), 'unknown word ' + k));
+  assert.ok(Vocab.ENTRIES.filter(e => Pictos.forWord(e.en)).length >= 400);
+});
