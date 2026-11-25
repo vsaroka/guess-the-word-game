@@ -15,13 +15,13 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 
 ## Languages
 
-- Eleven languages: German (`de`), French (`fr`), English (`en`), Spanish (`es`), Russian (`ru`), Italian (`it`), Bavarian (`bar`, shown as "Bairisch"), Dutch (`nl`), Polish (`pl`), Belarusian (`be`) and Ukrainian (`uk`). Bavarian has no fixed spelling; the words are a common phonetic spelling and may differ by region.
+- Twelve languages: German (`de`), French (`fr`), English (`en`), Spanish (`es`), Russian (`ru`), Italian (`it`), Bavarian (`bar`, shown as "Bairisch"), Dutch (`nl`), Polish (`pl`), Belarusian (`be`) and Ukrainian (`uk`) and Czech (`cs`). Bavarian has no fixed spelling; the words are a common phonetic spelling and may differ by region.
 - The player picks the language they speak and the language they want to learn. The language chosen on one side is greyed out in the other list, so the same language can never be selected twice.
-- 535 vocabulary entries (common nouns, verbs, adjectives, colours, numbers, weekdays and some abstract words), ordered from easy to hard. Every entry has all eleven languages.
+- 535 vocabulary entries (common nouns, verbs, adjectives, colours, numbers, weekdays and some abstract words), ordered from easy to hard. Every entry has all twelve languages.
 
 ## Pictograms
 
-- Words in the right-hand panel (the language being learned) and the answers in practice mode show a small emoji pictogram in front of the word, for example ☁️ for "cloud". About 440 of the 535 words have one; abstract words show none. Emoji are looked up by the English word in `src/js/pictos.js`, so no images are needed and they work offline.
+- Words in the right-hand panel (the language being learned) and the answers in practice mode show a small emoji pictogram in front of the word, for example ☁️ for "cloud". 518 of the 535 words have one (abstract words get a symbolic emoji); only weekdays and a few very abstract words show none. Emoji are looked up by the English word in `src/js/pictos.js`, so no images are needed and they work offline.
 - A checkbox on the start screen turns pictograms off (saved with the progress).
 
 ## Levels and difficulty
@@ -35,6 +35,12 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 
 - The level time is pairs multiplied by the time per pair.
 - Words are random each attempt and unique within a level. New words come in vocabulary order (easy to hard), but only as many as the player's progress allows: about 40% of a level, minus one for every 4 words that are still failing (at least 1). The rest of the level repeats known words, words with open failures first. If there are too few known words, new ones fill the gap.
+
+## Review session and repeating a level
+
+- After every cleared level the result overlay offers **Review newest words** and **Repeat this level** next to "Next level". Both are also on the start screen ("Review newest words", "Repeat level N").
+- **Review newest words** is a quiz like practice mode over the 10 words guessed most recently (the order is stored per language pair). Mistakes add failures to the practice list. It ends with "Next level".
+- **Repeat level** replays the last cleared level with exactly the same words, so time and score can be compared. The result shows "New best!" or the old best. It never changes which level is unlocked.
 
 ## Practice mode (retry failed words)
 
