@@ -22,6 +22,7 @@
       <p id="progress-info" class="sub"></p>
       <div class="row">
         <button id="btn-start" class="primary">Start</button>
+        <button id="btn-marathon">Marathon</button>
         <button id="btn-practice">Practice failed words (0)</button>
       </div>
       <div class="row">
@@ -68,6 +69,15 @@
         <button id="btn-stats-reset" class="ghost">Reset statistics</button>
       </div>
     </section>
+
+    <div id="marathon-pop" class="pop hidden" role="status">
+      <p id="pop-text"></p>
+      <div class="pop-bar"><div id="pop-fill"></div></div>
+      <div class="row">
+        <button id="pop-go" class="primary small">Continue now</button>
+        <button id="pop-cancel" class="ghost small">Cancel</button>
+      </div>
+    </div>
 
     <div id="overlay" class="overlay hidden">
       <div class="card">

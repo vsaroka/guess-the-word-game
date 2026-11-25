@@ -104,8 +104,9 @@
 
   var REVIEW_WORDS = 10; // the newest words offered in a review session
 
-  function startRound(mode, level, sameWords) {
-    stopTimer();
+  /** `run` (optional) continues a marathon: { carry: seconds taken over, streak: levels cleared so far }. */
+  function startRound(mode, level, sameWords, run) {
+    stopTimer(); hidePop();
     var pick, quiz = mode !== 'level';
     if (quiz) {
       pick = L.quizRound(mode === 'review' ? newestIdx(REVIEW_WORDS) : failedIdx(), V.ENTRIES.length);
@@ -118,7 +119,9 @@
     }
     var p = pick.params;
     g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0, fresh: 0, wrong: {},
-          strikes: {}, forfeits: 0, sel: null, selR: null, timeLeft: p.time, over: false, options: pick.options, qi: 0, busy: false, same: sameWords };
+          strikes: {}, forfeits: 0, sel: null, selR: null, timeLeft: p.time, over: false, options: pick.options, qi: 0, busy: false, same: sameWords,
+          run: run || null, total: p.time + (run ? run.carry : 0) };
+    g.timeLeft = g.total;
     $('title-native').textContent = V.LANGUAGES[save.native];
     $('title-target').textContent = V.LANGUAGES[save.target];
     hideOverlay();
@@ -317,10 +320,10 @@
   });
 
   function hud() {
-    $('hud-label').textContent = g.mode === 'practice' ? 'Practice' : g.mode === 'review' ? 'Review' : 'Level ' + g.level + ' / ' + L.MAX_LEVEL + (g.forfeits ? ' · ✖' + g.forfeits + '/' + MAX_FORFEITS : '');
+    $('hud-label').textContent = g.mode === 'practice' ? 'Practice' : g.mode === 'review' ? 'Review' : 'Level ' + g.level + ' / ' + L.MAX_LEVEL + (g.run ? ' · Marathon' : '') + (g.forfeits ? ' · ✖' + g.forfeits + '/' + MAX_FORFEITS : '');
     $('hud-score').textContent = save.score + g.gained;
     $('hud-time').textContent = Math.ceil(g.timeLeft);
-    var f = $('bar-fill'); f.style.width = (100 * g.timeLeft / g.p.time) + '%';
+    var f = $('bar-fill'); f.style.width = (100 * Math.min(1, g.timeLeft / g.total)) + '%';
     f.classList.toggle('low', g.timeLeft <= 15);   // red for the last 15 seconds
     f.classList.toggle('blink', g.timeLeft <= 5);  // blinking for the last 5 seconds
   }
@@ -342,7 +345,7 @@
         left ? 'Practice again' : 'Menu', left ? function () { startRound('practice'); } : toMenu);
       return;
     }
-    var gained = L.score({ pairs: g.p.pairs - g.forfeits }, g.timeLeft);
+    var gained = L.score({ pairs: g.p.pairs - g.forfeits }, Math.min(g.timeLeft, g.p.time)); // carried seconds earn no bonus
     save.score += gained;
     var next = Math.min(L.MAX_LEVEL, g.level + 1);
     if (g.level >= unlocked()) save.best[key()] = next;
@@ -351,10 +354,16 @@
     var prevBest = lv.best, repeat = lv.wins > 0;
     lv.wins++; lv.best = Math.max(lv.best, gained);
     save.last[key()] = { level: g.level, words: g.left.map(id) };
-    var used = Math.max(0.1, g.p.time - g.timeLeft); // seconds spent, wrong-pick penalties included
+    var used = Math.max(0.1, g.total - g.timeLeft); // seconds spent, wrong-pick penalties included
     if (!g.forfeits && (!lv.fast || used < lv.fast)) { lv.fast = Math.round(used * 10) / 10; lv.words = g.p.pairs; }
-    persist();
     var done = g.level >= L.MAX_LEVEL;
+    if (g.run) {
+      var streak = g.run.streak + 1;
+      s.marathonBest = Math.max(s.marathonBest || 0, streak);
+      persist();
+      if (!done) { marathonPop(next, g.timeLeft, streak, gained); return; }
+    }
+    persist();
     overlay(done ? 'You finished all ' + L.MAX_LEVEL + ' levels!' : 'Level ' + g.level + ' cleared',
       '+' + gained + ' points · ' + Math.ceil(g.timeLeft) + 's left' + (repeat && gained > prevBest ? ' · New best!' : repeat ? ' · best ' + prevBest : '') + wordsLine(),
       done ? 'Play again' : 'Next level', function () { startLevel(done ? 1 : next); },
@@ -384,9 +393,33 @@
       lv.losses++;
     }
     persist();
+    if (g.run && g.run.streak) text = (text || 'Level ' + g.level + ' not solved.') + ' Marathon ended after ' + g.run.streak + ' level' + (g.run.streak === 1 ? '' : 's') + '.';
     var retry = g.mode !== 'level' ? function () { startRound(g.mode); } : function () { startRound('level', g.level, g.same); };
     overlay(title || 'Time is up', text || (g.mode !== 'level' ? 'Round not finished.' : 'Level ' + g.level + ' not solved.'), 'Retry', retry);
   }
+
+  /* ---------- marathon: the time left goes on to the next level ---------- */
+
+  var POP_MS = 5000, popTimer = null;
+  function startMarathon() { startRound('level', unlocked(), null, { carry: 0, streak: 0 }); }
+  /** Small popup after a cleared marathon level: the next level starts by itself after 5 s unless cancelled. */
+  function marathonPop(next, carry, streak, gained) {
+    var round = g, secs = Math.max(0, Math.floor(carry));
+    $('pop-text').textContent = 'Level ' + round.level + ' cleared (+' + gained + ' points). Level ' + next + ' starts with +' + secs + 's carried over.';
+    var fill = $('pop-fill'); fill.classList.remove('run'); void fill.offsetWidth; fill.classList.add('run');
+    $('marathon-pop').classList.remove('hidden');
+    function go() { if (g === round) startRound('level', next, null, { carry: secs, streak: streak }); }
+    $('pop-go').onclick = go;
+    $('pop-cancel').onclick = function () {
+      hidePop();
+      overlay('Level ' + round.level + ' cleared', 'Marathon stopped after ' + streak + ' level' + (streak === 1 ? '' : 's') + '. ' + secs + 's were left.' + wordsLine(),
+        'Next level', function () { startLevel(next); },
+        [{ label: 'New marathon', fn: function () { startRound('level', next, null, { carry: 0, streak: 0 }); } },
+         { label: 'Review newest words', fn: function () { startRound('review'); } }]);
+    };
+    popTimer = setTimeout(go, POP_MS);
+  }
+  function hidePop() { clearTimeout(popTimer); popTimer = null; $('marathon-pop').classList.add('hidden'); }
 
   function overlay(title, text, primary, onPrimary, extras) {
     var box = $('ov-extra'); box.innerHTML = '';
@@ -400,7 +433,7 @@
   }
   function hideOverlay() { $('overlay').classList.add('hidden'); }
 
-  function toMenu() { stopTimer(); hideOverlay(); refreshStart(); show('screen-start'); }
+  function toMenu() { stopTimer(); hidePop(); hideOverlay(); refreshStart(); show('screen-start'); }
 
   /* ---------- statistics ---------- */
 
@@ -421,6 +454,7 @@
       ['Win rate', pct(s.wins, s.attempts)],
       ['Match accuracy', pct(s.matches, s.matches + s.misses)],
       ['Practice rounds cleared', s.practice],
+      ['Longest marathon', (s.marathonBest || 0) + ' levels'],
       ['Total score', save.score],
       ['Words guessed', guessedIdx().length + ' / ' + V.ENTRIES.length],
       ['Words left to learn', V.ENTRIES.length - guessedIdx().length],
@@ -483,7 +517,7 @@
       save.native = $('sel-native').value; save.target = $('sel-target').value;
       lockSame();
       var same = save.native === save.target;
-      $('btn-start').disabled = same; $('btn-stats').disabled = same;
+      $('btn-start').disabled = same; $('btn-marathon').disabled = same; $('btn-stats').disabled = same;
       persist(); refreshStart();
     }
     lockSame();
@@ -491,6 +525,7 @@
     $('chk-picto').checked = save.picto !== false;
     $('chk-picto').onchange = function () { save.picto = $('chk-picto').checked; persist(); };
     $('btn-start').onclick = function () { startLevel(unlocked()); };
+    $('btn-marathon').onclick = startMarathon;
     $('btn-practice').onclick = function () { startRound('practice'); };
     $('btn-review').onclick = function () { startRound('review'); };
     $('btn-repeat').onclick = repeatLast;

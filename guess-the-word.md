@@ -36,6 +36,13 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 - The level time is pairs multiplied by the time per pair.
 - Words are random each attempt and unique within a level. New words come in vocabulary order (easy to hard), but only as many as the player's progress allows: about 40% of a level, minus one for every 4 words that are still failing (at least 1). The rest of the level repeats known words, words with open failures first. If there are too few known words, new ones fill the gap.
 
+## Marathon
+
+- "Marathon" on the start screen starts the next level as a marathon. The header shows "Marathon".
+- When a marathon level is cleared, a small popup at the bottom says how many seconds are carried over and counts down 5 seconds (a shrinking bar). The next level then starts by itself with its normal time plus the seconds left from the level before. "Continue now" skips the wait; "Cancel" stops the marathon and shows the normal result overlay.
+- Carried seconds earn no extra points: the time bonus only counts up to the level's own time. Fastest-round statistics use the full time available.
+- A lost level ends the marathon ("Marathon ended after N levels"). The statistics show the longest marathon.
+
 ## Review session and repeating a level
 
 - After every cleared level the result overlay offers **Review newest words** and **Repeat this level** next to "Next level". Both are also on the start screen ("Review newest words", "Repeat level N").
