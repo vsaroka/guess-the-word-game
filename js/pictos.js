@@ -47,7 +47,15 @@
     'landscape':'🏞️','earthquake':'🌋','flood':'🌊','drought':'🏜️','volcano':'🌋','desert':'🏜️','glacier':'🧊','waterfall':'💦','cave':'🕳️','television':'📺',
     'news':'📰','advertisement':'📣','camera':'📷','battery':'🔋','tool':'🔧','hammer':'🔨','nail':'🔩','neighbor':'🏘️','neighbourhood':'🏘️','success':'🏆',
     'adventure':'🧭','balance':'⚖️','justice':'⚖️','health':'🩺','freedom':'🕊️','education':'🎓','truth':'✅','lie':'🤥','trust':'🤝','patience':'⏳',
-    'secret':'🤐','surprise':'😲','jealousy':'😒','loneliness':'🧍','mistake':'❌','fun':'🎉','help':'🆘','can':'💪','to stay':'🛑','to win':'🏆','to lose':'😞'
+    'secret':'🤐','surprise':'😲','jealousy':'😒','loneliness':'🧍','mistake':'❌','fun':'🎉','help':'🆘','can':'💪','to stay':'🛑','to win':'🏆','to lose':'😞',
+    'life':'🌱','way':'🛤️','air':'🌬️','new':'🆕','good':'👍','bad':'👎','beautiful':'😍','short':'🤏','easy':'😌','difficult':'😰',
+    'to come':'👋','to take':'🤲','to know':'🧠','to want':'🫴','to do':'🛠️','to say':'💬','to ask':'🙋','to answer':'🗨️','problem':'🧩','word':'🔤',
+    'back':'🔙','belly':'🫃','courage':'🥊','second':'⏲️','hundred':'💯','experience':'🏅','habit':'🔁','enemy':'👿','soul':'👼','safety':'🦺',
+    'illness':'🤧','to believe':'🙏','to forget':'🫥','to understand':'🤓','hope':'🌈','bitter':'😖','important':'❗','simple':'🔹','strange':'🤨','economy':'💹',
+    'decision':'🔀','memory':'💾','proposal':'📃','difference':'↔️','opportunity':'🔓','vocabulary':'📒','responsibility':'🧑‍⚖️','conscience':'😇','challenge':'🧗','connection':'🔗',
+    'ambition':'🚀','prejudice':'🚫','misunderstanding':'🙄','modesty':'🙇','limitation':'⛔','waste':'🗑️','reliability':'✔️','sustainability':'♻️','society':'🌐','development':'📈',
+    'relationship':'💞','community':'🫂','result':'🏁','cause':'➡️','doubt':'🤷','curiosity':'🧐','gratitude':'💐','intention':'🎯','equality':'🟰','majority':'🧑‍🤝‍🧑',
+    'advantage':'➕','disadvantage':'➖','exception':'❕','effort':'💦','enthusiasm':'🤩','embarrassment':'😳','perseverance':'🥾','self-confidence':'😎','youth':'🧑','table':'🪑'
   };
   function forWord(en) { return MAP[en] || ''; }
   return { MAP: MAP, forWord: forWord };

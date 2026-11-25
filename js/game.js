@@ -4,7 +4,7 @@
   var STORE = 'guess-the-word-v1';
   var PAIR_FLASH_MS = 500; // a matched pair stays visible (green) this long before it is replaced
 
-  function defaults() { return { native: 'de', target: 'fr', best: {}, score: 0, failed: {}, stats: {}, picto: true }; }
+  function defaults() { return { native: 'de', target: 'fr', best: {}, score: 0, failed: {}, stats: {}, last: {}, picto: true }; }
   function load() {
     try { return Object.assign(defaults(), JSON.parse(localStorage.getItem(STORE))); }
     catch (e) { return defaults(); }
@@ -28,6 +28,23 @@
     return s;
   }
   function wordStat(idx) { var w = stats().words; return w[id(idx)] || (w[id(idx)] = { ok: 0, miss: 0 }); }
+  /** Ids of guessed words in the order they were first guessed (older saves are filled in vocabulary order). */
+  function learnedList() {
+    var s = stats(), list = s.learned || (s.learned = []), seen = {};
+    list.forEach(function (k) { seen[k] = true; });
+    var missing = [];
+    for (var i = 0; i < V.ENTRIES.length; i++) if (isGuessed(i) && !seen[id(i)]) missing.push(id(i));
+    if (missing.length) s.learned = missing.concat(list);
+    return s.learned;
+  }
+  function newestIdx(n) { return learnedList().slice(-n).map(function (k) { return byId[k]; }).filter(function (i) { return i != null; }); }
+  /** Records a correct answer; returns true when the word was guessed for the first time. */
+  function recordOk(idx) {
+    var first = !isGuessed(idx);
+    if (first) { learnedList(); stats().learned.push(id(idx)); }
+    wordStat(idx).ok++;
+    return first;
+  }
   function isGuessed(idx) { var w = stats().words[id(idx)]; return !!(w && w.ok > 0); }
   function guessedIdx() { var r = []; for (var i = 0; i < V.ENTRIES.length; i++) if (isGuessed(i)) r.push(i); return r; }
   /** Failure counts per word id. Older saves stored a plain list of ids (one failure each). */
@@ -62,6 +79,10 @@
     $('progress-info').textContent = 'Next level: ' + unlocked() + ' (' + key().replace('>', ' → ') + ')';
     $('btn-practice').textContent = 'Practice failed words (' + n + ')';
     $('btn-practice').disabled = n === 0 || save.native === save.target;
+    var same = save.native === save.target, last = save.last[key()];
+    $('btn-review').disabled = same || newestIdx(REVIEW_WORDS).length === 0;
+    $('btn-repeat').textContent = 'Repeat level ' + (last ? last.level : Math.max(1, unlocked() - 1));
+    $('btn-repeat').disabled = same || (!last && unlocked() <= 1);
   }
 
   function show(screen) {
@@ -81,25 +102,30 @@
 
   /* ---------- rounds ---------- */
 
-  function startRound(mode, level) {
+  var REVIEW_WORDS = 10; // the newest words offered in a review session
+
+  function startRound(mode, level, sameWords) {
     stopTimer();
-    var pick;
-    if (mode === 'practice') {
-      pick = L.quizRound(failedIdx(), V.ENTRIES.length);
+    var pick, quiz = mode !== 'level';
+    if (quiz) {
+      pick = L.quizRound(mode === 'review' ? newestIdx(REVIEW_WORDS) : failedIdx(), V.ENTRIES.length);
       if (!pick.pairs.length) { toMenu(); return; }
+    } else if (sameWords) {
+      // repeating a level: the same words as last time, to beat the old time and score
+      pick = { params: L.params(level), pairs: L.shuffle(sameWords), distractors: [] };
     } else {
       pick = L.pickWords(V.ENTRIES.length, level, null, guessedIdx(), weakIdx());
     }
     var p = pick.params;
     g = { mode: mode, level: level, p: p, left: pick.pairs, queue: pick.pairs.slice(), matched: {}, missed: {}, gained: 0, fresh: 0, wrong: {},
-          strikes: {}, forfeits: 0, sel: null, selR: null, timeLeft: p.time, over: false, options: pick.options, qi: 0, busy: false };
+          strikes: {}, forfeits: 0, sel: null, selR: null, timeLeft: p.time, over: false, options: pick.options, qi: 0, busy: false, same: sameWords };
     $('title-native').textContent = V.LANGUAGES[save.native];
     $('title-target').textContent = V.LANGUAGES[save.target];
     hideOverlay();
     show('screen-game');
-    $('panels').classList.toggle('hidden', mode === 'practice');
-    $('quiz').classList.toggle('hidden', mode !== 'practice');
-    if (mode === 'practice') {
+    $('panels').classList.toggle('hidden', quiz);
+    $('quiz').classList.toggle('hidden', !quiz);
+    if (quiz) {
       showQuestion();
       g.timer = setInterval(tick, 250);
       g.last = Date.now();
@@ -135,7 +161,7 @@
     var idx = g.left[g.qi], s = stats();
     if (opt === idx) {
       g.busy = true; el.classList.add('done');
-      s.matches++; if (!isGuessed(idx)) g.fresh++; wordStat(idx).ok++;
+      s.matches++; if (recordOk(idx)) g.fresh++;
       if (!g.qmiss) removeFailed(idx); // answered at the first try: one failure paid off
       persist(); hud();
       var round = g;
@@ -229,8 +255,7 @@
       var idx = leftIdx;
       g.matched[idx] = true;
       [leftBtn, rightBtn].forEach(function (b) { b.classList.remove('sel'); b.classList.add('done'); b.disabled = true; });
-      s.matches++; if (!isGuessed(idx)) g.fresh++; wordStat(idx).ok++;
-      if (g.mode === 'practice' && !g.missed[idx]) removeFailed(idx); // cleared without a mistake
+      s.matches++; if (recordOk(idx)) g.fresh++;
       g.sel = null; g.selR = null;
       if (g.mode === 'level') g.gained += 10;
       persist(); hud();
@@ -292,7 +317,7 @@
   });
 
   function hud() {
-    $('hud-label').textContent = g.mode === 'practice' ? 'Practice' : 'Level ' + g.level + ' / ' + L.MAX_LEVEL + (g.forfeits ? ' · ✖' + g.forfeits + '/' + MAX_FORFEITS : '');
+    $('hud-label').textContent = g.mode === 'practice' ? 'Practice' : g.mode === 'review' ? 'Review' : 'Level ' + g.level + ' / ' + L.MAX_LEVEL + (g.forfeits ? ' · ✖' + g.forfeits + '/' + MAX_FORFEITS : '');
     $('hud-score').textContent = save.score + g.gained;
     $('hud-time').textContent = Math.ceil(g.timeLeft);
     var f = $('bar-fill'); f.style.width = (100 * g.timeLeft / g.p.time) + '%';
@@ -303,6 +328,13 @@
   function win() {
     g.over = true; stopTimer();
     var s = stats();
+    if (g.mode === 'review') {
+      persist();
+      overlay('Review done', 'The newest words are fresh again. Words you missed were added to the practice list.',
+        'Next level', function () { startLevel(unlocked()); },
+        [{ label: 'Review again', fn: function () { startRound('review'); } }]);
+      return;
+    }
     if (g.mode === 'practice') {
       s.practice++; persist();
       var left = failedIdx().length;
@@ -316,14 +348,27 @@
     if (g.level >= unlocked()) save.best[key()] = next;
     s.attempts++; s.wins++;
     var lv = s.levels[g.level] || (s.levels[g.level] = { wins: 0, losses: 0, best: 0 });
+    var prevBest = lv.best, repeat = lv.wins > 0;
     lv.wins++; lv.best = Math.max(lv.best, gained);
+    save.last[key()] = { level: g.level, words: g.left.map(id) };
     var used = Math.max(0.1, g.p.time - g.timeLeft); // seconds spent, wrong-pick penalties included
     if (!g.forfeits && (!lv.fast || used < lv.fast)) { lv.fast = Math.round(used * 10) / 10; lv.words = g.p.pairs; }
     persist();
     var done = g.level >= L.MAX_LEVEL;
     overlay(done ? 'You finished all ' + L.MAX_LEVEL + ' levels!' : 'Level ' + g.level + ' cleared',
-      '+' + gained + ' points · ' + Math.ceil(g.timeLeft) + 's left' + wordsLine(),
-      done ? 'Play again' : 'Next level', function () { startLevel(done ? 1 : next); });
+      '+' + gained + ' points · ' + Math.ceil(g.timeLeft) + 's left' + (repeat && gained > prevBest ? ' · New best!' : repeat ? ' · best ' + prevBest : '') + wordsLine(),
+      done ? 'Play again' : 'Next level', function () { startLevel(done ? 1 : next); },
+      [{ label: 'Review newest words', fn: function () { startRound('review'); } },
+       { label: 'Repeat this level', fn: repeatLast }]);
+  }
+  /** Plays the last cleared level again with the same words, to improve time and score. */
+  function repeatLast() {
+    var last = save.last[key()];
+    if (last && last.level) {
+      var words = last.words.map(function (k) { return byId[k]; }).filter(function (i) { return i != null; });
+      if (words.length === last.words.length) { startRound('level', last.level, words); return; }
+    }
+    startRound('level', Math.max(1, unlocked() - 1));
   }
   function wordsLine() {
     var n = guessedIdx().length, t = V.ENTRIES.length;
@@ -339,11 +384,15 @@
       lv.losses++;
     }
     persist();
-    var retry = g.mode === 'practice' ? function () { startRound('practice'); } : function () { startLevel(g.level); };
-    overlay(title || 'Time is up', text || (g.mode === 'practice' ? 'Practice round not finished.' : 'Level ' + g.level + ' not solved.'), 'Retry', retry);
+    var retry = g.mode !== 'level' ? function () { startRound(g.mode); } : function () { startRound('level', g.level, g.same); };
+    overlay(title || 'Time is up', text || (g.mode !== 'level' ? 'Round not finished.' : 'Level ' + g.level + ' not solved.'), 'Retry', retry);
   }
 
-  function overlay(title, text, primary, onPrimary) {
+  function overlay(title, text, primary, onPrimary, extras) {
+    var box = $('ov-extra'); box.innerHTML = '';
+    (extras || []).forEach(function (x) {
+      var b = document.createElement('button'); b.className = 'ghost'; b.textContent = x.label; b.onclick = x.fn; box.appendChild(b);
+    });
     $('ov-title').textContent = title; $('ov-text').textContent = text;
     $('ov-primary').textContent = primary; $('ov-primary').onclick = onPrimary;
     $('ov-secondary').classList.toggle('hidden', primary === 'Menu'); // no duplicate Menu button
@@ -443,13 +492,15 @@
     $('chk-picto').onchange = function () { save.picto = $('chk-picto').checked; persist(); };
     $('btn-start').onclick = function () { startLevel(unlocked()); };
     $('btn-practice').onclick = function () { startRound('practice'); };
+    $('btn-review').onclick = function () { startRound('review'); };
+    $('btn-repeat').onclick = repeatLast;
     $('btn-stats').onclick = showStats;
     $('btn-stats-back').onclick = toMenu;
     $('btn-stats-reset').onclick = function () {
       if (!confirm('Delete statistics and the failed-words list for this language pair?')) return;
       delete save.stats[key()]; delete save.failed[key()]; persist(); showStats();
     };
-    $('btn-reset').onclick = function () { delete save.best[key()]; persist(); refreshStart(); };
+    $('btn-reset').onclick = function () { delete save.best[key()]; delete save.last[key()]; persist(); refreshStart(); };
     $('btn-quit').onclick = toMenu;
     $('ov-secondary').onclick = toMenu;
     var v = window.APP_VERSION;
