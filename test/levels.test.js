@@ -3,7 +3,7 @@ const assert = require('node:assert');
 const Levels = require('../src/js/levels.js');
 const Vocab = require('../src/js/vocab.js');
 
-test('difficulty never decreases across 200 levels', () => {
+test('difficulty never decreases across 400 levels', () => {
   let prev = Levels.params(1);
   for (let l = 2; l <= Levels.MAX_LEVEL; l++) {
     const p = Levels.params(l);
@@ -23,7 +23,7 @@ test('both panels hold the same words and grow by one every two levels up to the
     assert.strictEqual(Levels.pickWords(n, l).pairs.length, p.pairs);
   }
   assert.strictEqual(Levels.params(1).pairs, 4);
-  assert.strictEqual(Levels.params(200).pairs, 30);
+  assert.strictEqual(Levels.params(400).pairs, 30);
   assert.ok(Levels.params(50).time / Levels.params(50).pairs >= 6.9, 'first 50 levels are generous');
 });
 
@@ -68,7 +68,7 @@ test('vocabulary is complete and unambiguous per language', () => {
 
 test('new words per level depend on progress, the rest repeats known words', () => {
   const total = Vocab.ENTRIES.length;
-  for (const level of [1, 5, 20, 50, 100, 200]) {
+  for (const level of [1, 5, 20, 50, 100, 200, 400]) {
     const p = Levels.params(level);
     for (const knownCount of [0, 3, 10, 40, 110, 300, total]) {
       const known = []; for (let i = 0; i < knownCount; i++) known.push(i);
@@ -95,9 +95,9 @@ test('fewer new words while many words are failing', () => {
   assert.ok(Levels.newWordLimit(30, 100) >= 1);
 });
 
-test('there are at least 500 words and 200 levels', () => {
+test('there are 999 words and 400 levels', () => {
   assert.ok(Vocab.ENTRIES.length >= 500, 'words: ' + Vocab.ENTRIES.length);
-  assert.strictEqual(Levels.MAX_LEVEL, 200);
+  assert.strictEqual(Levels.MAX_LEVEL, 400);
 });
 
 test('pictograms refer to existing words and cover most of the vocabulary', () => {

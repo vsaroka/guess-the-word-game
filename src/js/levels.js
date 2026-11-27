@@ -3,7 +3,7 @@
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Levels = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
-  var MAX_LEVEL = 200;
+  var MAX_LEVEL = 400;
   var MISS_PENALTY = 3;          // seconds lost on a wrong match
   var PAIRS_PER_LEVEL = 0.5;     // both panels grow by one word every two levels
   var BASE_PAIRS = 3;            // level 1 has 4 words
@@ -18,8 +18,8 @@
   function params(level) {
     level = clamp(Math.round(level), 1, MAX_LEVEL);
     var pairs = Math.min(MAX_PAIRS, BASE_PAIRS + Math.ceil(PAIRS_PER_LEVEL * level));
-    // seconds budget per pair: generous 10 -> 7 over levels 1-50, then 7 -> 3.2 at level 200
-    var perPair = level <= 50 ? 10 - level * 0.06 : 7 - (level - 50) * 0.0253;
+    // seconds budget per pair: generous 10 -> 7 over levels 1-50, then 7 -> 3.2 at level 400
+    var perPair = level <= 50 ? 10 - level * 0.06 : 7 - (level - 50) * 0.010857;
     var time = Math.round(pairs * perPair);
     return { level: level, pairs: pairs, distractors: 0, time: time, penalty: MISS_PENALTY };
   }

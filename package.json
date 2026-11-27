@@ -1,7 +1,7 @@
 {
   "name": "guess-the-word-game",
-  "version": "0.21.0",
-  "description": "Browser prototype: match words in your language with translations in the language you learn. 150 timed levels.",
+  "version": "0.22.0",
+  "description": "Browser prototype: match words in your language with translations in the language you learn. 400 timed levels, 999 words.",
   "private": true,
   "scripts": {
     "start": "npx http-server src -p 8080 -c-1",

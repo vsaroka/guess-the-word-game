@@ -10,25 +10,25 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 - **Level cleared** when every pair is matched. The result overlay shows points, time left, new words learned in this level and the learned total (for example "5 new words · 8/119 learned"), and offers "Next level".
 - **Three wrong picks for one word** solve it automatically: the pair turns green with a red border and stays on screen, no points are given, and the 3-second penalty applies as for any wrong pick. The header shows ✖1/3. The third such word loses the level ("Too many mistakes"). Fastest-round statistics ignore levels with given-away words.
 - **Level failed** when the timer reaches 0. The overlay offers "Retry" for the same level.
-- **Finish.** Clearing level 200 shows a completion message with "Play again", which restarts from level 1.
+- **Finish.** Clearing level 400 shows a completion message with "Play again", which restarts from level 1.
 - **Menu button** in the game bar and on the overlay returns to the start screen and stops the timer.
 
 ## Languages
 
 - Twelve languages: German (`de`), French (`fr`), English (`en`), Spanish (`es`), Russian (`ru`), Italian (`it`), Bavarian (`bar`, shown as "Bairisch"), Dutch (`nl`), Polish (`pl`), Belarusian (`be`) and Ukrainian (`uk`) and Czech (`cs`). Bavarian has no fixed spelling; the words are a common phonetic spelling and may differ by region.
 - The player picks the language they speak and the language they want to learn. The language chosen on one side is greyed out in the other list, so the same language can never be selected twice.
-- 535 vocabulary entries (common nouns, verbs, adjectives, colours, numbers, weekdays and some abstract words), ordered from easy to hard. Every entry has all twelve languages.
+- 999 vocabulary entries (common nouns, verbs, adjectives, colours, numbers, weekdays, months, food, animals, body, home, clothes, sports, technology, city, nature, work and some abstract words), ordered from easy to hard. Every entry has all twelve languages.
 
 ## Pictograms
 
-- Words in the right-hand panel (the language being learned) and the answers in practice mode show a small emoji pictogram in front of the word, for example ☁️ for "cloud". 518 of the 535 words have one (abstract words get a symbolic emoji); only weekdays and a few very abstract words show none. Emoji are looked up by the English word in `src/js/pictos.js`, so no images are needed and they work offline.
+- Words in the right-hand panel (the language being learned) and the answers in practice mode show a small emoji pictogram in front of the word, for example ☁️ for "cloud". 700 of the 999 words have one (some abstract words get a symbolic emoji); weekdays and many abstract words or verbs show none. Where no emoji exists, a small inline SVG is used instead (the table, so it no longer shares the chair emoji). Emoji are looked up by the English word in `src/js/pictos.js`, so no images are needed and they work offline.
 - A checkbox on the start screen turns pictograms off (saved with the progress).
 
 ## Levels and difficulty
 
-200 levels. Difficulty is computed in `src/js/levels.js`.
+400 levels. Difficulty is computed in `src/js/levels.js`.
 
-| Parameter | Level 1 | Level 50 | Level 200 |
+| Parameter | Level 1 | Level 50 | Level 400 |
 |---|---|---|---|
 | Words in each panel (same count on both sides, every word has a match) | 4 (one more every two levels) | 28 | 30 (capped from level 54) |
 | Time per pair | about 9.9 s | 7 s | 3.2 s |
@@ -60,7 +60,7 @@ Status of the prototype in `src/`. Plain HTML, CSS and JS with no build step.
 ## Statistics
 
 Per language pair, opened with "Statistics" on the start screen:
-- highest level reached, levels cleared (of 200), level attempts, win rate
+- highest level reached, levels cleared (of 400), level attempts, win rate
 - match accuracy (correct matches against mistakes), practice rounds cleared, total score
 - words guessed (of all words) and words left to learn
 - fastest pace and fastest round: seconds per word compared with the number of words in the level, plus a table of the 5 fastest rounds (time used includes wrong-pick penalties; only levels cleared since this feature was added are recorded)

@@ -38,7 +38,7 @@ Run `npm run stamp` before installing or publishing: it writes `src/js/version.j
 
 ## Rules
 
-- 200 levels per language pair; progress and score are stored in `localStorage`.
+- 400 levels per language pair and 999 words in twelve languages; progress and score are stored in `localStorage`.
 - A wrong match costs 3 seconds. Running out of time means retrying the level.
 - Score per level: 10 per pair + 2 per second left.
 
@@ -49,7 +49,7 @@ Run `npm run stamp` before installing or publishing: it writes `src/js/version.j
 
 ## Difficulty curve (`src/js/levels.js`)
 
-| Knob | Level 1 | Level 50 | Level 200 |
+| Knob | Level 1 | Level 50 | Level 400 |
 |---|---|---|---|
 | Words in each panel | 4 (+1 every 2 levels) | 28 | 30 (cap from level 54) |
 | Time per pair | ~9.9 s | ~7 s | ~3.2 s |
