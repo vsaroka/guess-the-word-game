@@ -96,7 +96,7 @@
   function setLabel(b, idx, lang) {
     b.textContent = '';
     var pic = save.picto !== false && lang === save.target ? P.forWord(id(idx)) : '';
-    if (pic) { var i = document.createElement('span'); i.className = 'picto'; i.setAttribute('aria-hidden', 'true'); i.textContent = pic; b.appendChild(i); }
+    if (pic) { var i = document.createElement('span'); i.className = 'picto'; i.setAttribute('aria-hidden', 'true'); if (pic.indexOf('<svg') === 0) i.innerHTML = pic; else i.textContent = pic; b.appendChild(i); }
     b.appendChild(document.createTextNode(word(idx, lang)));
   }
 

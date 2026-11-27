@@ -1,4 +1,4 @@
-/* Pictograms (emoji) for vocabulary entries, keyed by the English word. Abstract words have none. */
+/* Pictograms (emoji, or inline SVG where no emoji exists) for vocabulary entries, keyed by the English word. Abstract words have none. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Pictos = factory();
@@ -55,7 +55,30 @@
     'decision':'🔀','memory':'💾','proposal':'📃','difference':'↔️','opportunity':'🔓','vocabulary':'📒','responsibility':'🧑‍⚖️','conscience':'😇','challenge':'🧗','connection':'🔗',
     'ambition':'🚀','prejudice':'🚫','misunderstanding':'🙄','modesty':'🙇','limitation':'⛔','waste':'🗑️','reliability':'✔️','sustainability':'♻️','society':'🌐','development':'📈',
     'relationship':'💞','community':'🫂','result':'🏁','cause':'➡️','doubt':'🤷','curiosity':'🧐','gratitude':'💐','intention':'🎯','equality':'🟰','majority':'🧑‍🤝‍🧑',
-    'advantage':'➕','disadvantage':'➖','exception':'❕','effort':'💦','enthusiasm':'🤩','embarrassment':'😳','perseverance':'🥾','self-confidence':'😎','youth':'🧑','table':'🪑'
+    'advantage':'➕','disadvantage':'➖','exception':'❕','effort':'💦','enthusiasm':'🤩','embarrassment':'😳','perseverance':'🥾','self-confidence':'😎','youth':'🧑','table':'<svg viewBox="0 0 24 24" width="1.15em" height="1.15em"><rect x="2" y="7" width="20" height="3.2" rx="1" fill="#b5713d"/><rect x="2" y="9.4" width="20" height="1.2" fill="#8a5129"/><rect x="4" y="10" width="2.4" height="11" rx=".8" fill="#8a5129"/><rect x="17.6" y="10" width="2.4" height="11" rx=".8" fill="#8a5129"/><rect x="6" y="12.5" width="12" height="1.4" fill="#9c5e30"/></svg>',
+    'salad':'🥗','sandwich':'🥪','pizza':'🍕','sausage':'🌭','ham':'🍖','chocolate':'🍫','ice cream':'🍨','cookie':'🍪',
+    'oil':'🛢️','pepper':'🌶️','garlic':'🧄','carrot':'🥕','cucumber':'🥒','cabbage':'🥬','bean':'🫘','mushroom':'🍄',
+    'lemon':'🍋','peach':'🍑','pineapple':'🍍','watermelon':'🍉','nut':'🥜','meal':'🍱','dessert':'🍮','recipe':'📋',
+    'pot':'🫕','bowl':'🥣','olive':'🫒','shrimp':'🦐','spider':'🕷️','ant':'🐜','fly':'🪰','mosquito':'🦟',
+    'frog':'🐸','turtle':'🐢','whale':'🐋','dolphin':'🐬','shark':'🦈','octopus':'🐙','crocodile':'🐊','giraffe':'🦒',
+    'zebra':'🦓','tiger':'🐯','kangaroo':'🦘','camel':'🐫','deer':'🦌','owl':'🦉','eagle':'🦅','parrot':'🦜',
+    'penguin':'🐧','swan':'🦢','snail':'🐌','worm':'🪱','donkey':'🫏','bull':'🐂','hedgehog':'🦔','goose':'🪿',
+    'brown':'🟫','grey':'🩶','purple':'🟪','zero':'0️⃣','twelve':'🕛','parents':'👨‍👩‍👧','grandmother':'👵','grandfather':'👴',
+    'baby':'🍼','husband':'🤵','wife':'👰','person':'🧑','tourist':'📸','hero':'🦸','bone':'🦴','lung':'🫁',
+    'beard':'🧔','fingernail':'💅','fever':'🌡️','cough':'😷','wound':'🩹','toilet':'🚽','shower':'🚿','tap':'🚰',
+    'clock':'🕰️','vase':'🏺','plant':'🪴','basket':'🧺','bucket':'🪣','lock':'🔐','boot':'👢','sandal':'👡',
+    'tie':'👔','swimsuit':'🩱','wallet':'👛','necklace':'📿','slipper':'🥿','tennis':'🎾','race':'🏎️','goal':'🥅',
+    'chess':'♟️','tent':'⛺','ski':'🎿','email':'📧','message':'📨','screen':'🖥️','keyboard':'⌨️','printer':'🖨️',
+    'video':'📹','radio':'📻','mailbox':'📫','charger':'🔌','headphones':'🎧','loudspeaker':'🔈','parking':'🅿️','tram':'🚋',
+    'subway':'🚇','motorcycle':'🏍️','truck':'🚚','boat':'🚤','helicopter':'🚁','palace':'🏰','cemetery':'🪦','stadium':'🏟️',
+    'bakery':'🥖','cinema':'🎞️','port':'⚓','petrol':'⛽','wheel':'🛞','fog':'🌫️','storm':'🌪️','lightning':'🌩️',
+    'rainbow':'🌈','planet':'🪐','sunrise':'🌄','sunset':'🌇','north':'⬆️','south':'⬇️','west':'⬅️','pencil':'✏️',
+    'ruler':'📐','notebook':'📓','mathematics':'➗','geography':'🌎','chemistry':'⚗️','engineer':'🧑‍🔧','singer':'🧑‍🎤','pilot':'🧑‍✈️',
+    'firefighter':'🧑‍🚒','calendar':'📆','to break':'💔','to change':'🔄','to count':'🧮','to paint':'🖌️','to smile':'😊','to kiss':'💋',
+    'to arrive':'🛬','to return':'↩️','to hide':'🙈','to celebrate':'🥳','round':'⚪','lazy':'🦥','funny':'🤣','serious':'😐',
+    'nervous':'😬','angry':'😠','famous':'🌟','next':'⏭️','peace':'☮️','army':'🪖','victory':'✌️','thief':'🦹',
+    'information':'ℹ️','anger':'😡','doll':'🪆','flag':'🚩','needle':'🪡','thread':'🧵','chain':'⛓️','toothbrush':'🪥',
+    'shampoo':'🧴','crown':'👑','bell':'🔔','drum':'🥁','guitar':'🎸','piano':'🎹'
   };
   function forWord(en) { return MAP[en] || ''; }
   return { MAP: MAP, forWord: forWord };
